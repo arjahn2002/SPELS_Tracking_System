@@ -1,0 +1,314 @@
+﻿@model MY_CSC_PROJECT.ViewModels.RoleVM
+
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Roles";
+}
+
+<div class="d-flex align-items-center mt-3 mb-3">
+    <h4 class="me-auto">Roles </h4>
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#AddModal">
+        Add new
+    </button>
+
+</div>
+
+<table class="table table-striped" id="TableIndex">
+    <thead>
+        <tr>
+            <th>
+                Role id
+            </th>
+            <th>
+                Role name
+            </th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Roles)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.RoleID)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.RoleName)
+                </td>
+                <td>
+                    <a class="btn btn-success btn-sm" onclick="EditForm(@item.RoleID)" id="EditForm">Edit</a> |
+                    <a class="btn btn-danger btn-sm" onclick="ConfirmForm(@item.RoleID)">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<!-- Add User Role Name -->
+<form asp-action="Create" method="post" class="needs-validation" novalidate>
+    <div class="modal fade" id="AddModal" tabindex="-1" aria-labelledby="sampleDocsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5 text-primary" id="sampleDocsModalLabel">Add New Role</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" asp-for="Role.RoleName" class="form-control" id="AddRoleName" placeholder="Role name" required />
+                        <label for="AddRoleName">Role name</label>
+                        <span asp-validation-for="Role.RoleName" class="text-danger"></span>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button id="btnSave" type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Edit Role -->
+<form asp-action="Edit" id="EditFormModal" method="post" class="needs-validation" novalidate>
+    <div class="modal fade" id="EditModal" tabindex="-1" aria-labelledby="sampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5 text-primary" id="sampleDocsModalLabel">Edit Role & Permission</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input asp-for="Role.RoleID" class="form-control editID" hidden />
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Role.RoleName" class="form-control" id="EditRoleName" required />
+                        <label><span class="text-danger fw-bold">*</span> Role name</label>
+                        <span asp-validation-for="Role.RoleName" class="text-danger"></span>
+                    </div>
+
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Stages</th>
+                                <th>Can access?</th>
+                                <th>Can forward?</th>
+                                <th>Can add?</th>
+                                <th>Can edit?</th>
+                                <th>Can export?</th>
+                                <th>Can remove?</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            
+                        </tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Delete Role -->
+<form asp-action="Delete" method="post">
+    <div class="modal fade" id="DeleteModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5 text-danger" id="exampleModalLabel">Delete Role</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input id="RoleID" name="RoleID" hidden />
+                    <h5>Are you sure to delete this role?</h5>
+                </div>
+                <div class="modal-footer">
+                    <button id="btnDelete" type="button" class="btn btn-danger">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let addModal = document.getElementById('AddModal');
+            let editModal = document.getElementById('EditModal');
+            let addRoleName = document.getElementById('AddRoleName');
+            let editRoleName = document.getElementById('EditRoleName');
+            let form = this.querySelector("form");
+
+            addModal.addEventListener('shown.bs.modal', function () {
+                addRoleName.focus();
+            });
+
+            editModal.addEventListener('shown.bs.modal', function () {
+                editRoleName.focus();
+            });
+
+            addModal.addEventListener('hidden.bs.modal', function () {
+                form.reset();
+                addRoleName.classList.remove("is-invalid");
+                form.classList.remove("was-validated");
+
+                let validationMsg = form.querySelector(".text-danger");
+                if (validationMsg) {
+                    validationMsg.textContent = "";
+                }
+            });
+
+            editModal.addEventListener('hidden.bs.modal', function () {
+                form.reset();
+                editRoleName.classList.remove("is-invalid");
+                form.classList.remove("was-validated");
+
+                let validationMsg = form.querySelector(".text-danger");
+                if (validationMsg) {
+                    validationMsg.textContent = "";
+                }
+            });
+        });
+    </script>
+
+    <script>
+        var ConfirmForm = function (id) {
+            $("#RoleID").val(id);
+            $("#DeleteModal").modal("show");
+        };
+
+        $(document).ready(function () {
+            $("#btnDelete").click(function () {
+                var idDelete = $("#RoleID").val();
+
+                $.ajax({
+                    type: "POST",
+                    url: "/Roles/Delete",
+                    data: { intDelete: idDelete },
+                    success: function (result) {
+                        if (result) {
+                            $("#RoleID").val(null);
+                            window.location.href = "/Roles/Index";
+                        } else {
+                            alert("Oishi! Something went wrong.");
+                        }
+                    }
+                });
+            });
+        });
+
+        function EditForm(id) {
+            $.ajax({
+                type: "GET",
+                url: "/Roles/GetRole",
+                data: { getID: id },
+                success: function (role) {
+                    console.log("Role Data:", role);
+                    $("#EditModal").modal("show");
+                    $(".editID").val(role.roleid);
+                    $("#EditRoleName").val(role.rolename);
+
+                    // Clear existing rows in the table
+                    let tbody = $("#EditModal tbody");
+                    tbody.empty();
+
+                    // Define the stages
+                    let stages = ["Documents", "EvaluationStages", "ProofingStages", "PostingStages", "ApprovalStages", "ODStages", "ReleasingStages"];
+                    let stageNames = ["Receiving Stage", "Evaluation Stage", "Proofing Stage", "Posting Stage", "Approval Stage", "OD Stage", "Releasing Stage"];
+
+                    $.each(stages, function (index, stage) {
+                        let permission = role.rolepermission.find(p => p.stageName === stage);
+                        let isChecked = permission ? permission.isEnabled : false;
+                        let canForward = permission ? permission.canForward : false;
+
+                        let row = `
+                            <tr>
+                                <td>${stageNames[index]}</td>
+                                <td>
+                                    <input type="hidden" name="Stages[${index}].StageName" value="${stage}" />
+                                    <input type="checkbox" name="Stages[${index}].CanAccess" value="true" ${isChecked ? "checked" : ""} />
+                                </td>
+                                <td>
+                                    ${stage !== "Documents"
+                                        ? ` 
+                                            <input type="checkbox" name="Stages[${index}].CanForward" value="true" ${canForward ? "checked" : ""} />`
+                                        : ``
+                                    }
+                                </td>`;
+
+                        // Only add extra checkboxes for "Documents" stage
+                        if (stage === "Documents") {
+                            let canAdd = permission ? permission.canAdd : false;
+                            let canEdit = permission ? permission.canEdit : false;
+                            let canExport = permission ? permission.canExport : false;
+                            let canRemove = permission ? permission.canRemove : false;
+
+                            row += `
+                                <td>
+                                    <input type="hidden" name="Stages[${index}].StageName" value="false" />
+                                    <input type="checkbox" name="Stages[${index}].CanAdd" value="true" ${canAdd ? "checked" : ""} />
+                                </td>
+                                <td>
+                                    <input type="hidden" name="Stages[${index}].StageName" value="false" />
+                                    <input type="checkbox" name="Stages[${index}].CanEdit" value="true" ${canEdit ? "checked" : ""} />
+                                </td>
+                                <td>
+                                    <input type="hidden" name="Stages[${index}].StageName" value="false" />
+                                    <input type="checkbox" name="Stages[${index}].CanExport" value="true" ${canExport ? "checked" : ""} />
+                                </td>
+                                <td>
+                                    <input type="hidden" name="Stages[${index}].StageName" value="false" />
+                                    <input type="checkbox" name="Stages[${index}].CanRemove" value="true" ${canRemove ? "checked" : ""} />
+                                </td>`;
+                        } else {
+                            row += `
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td></td>`;
+                        }
+
+                        row += `</tr>`;
+                        tbody.append(row);
+                    });
+                },
+                error: function (err) {
+                    console.error("Error fetching role:", err);
+                }
+            });
+        }
+
+    </script>
+
+    <script>
+        (() => {
+            'use strict'
+
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            const forms = document.querySelectorAll('.needs-validation')
+
+            // Loop over them and prevent submission
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

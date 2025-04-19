@@ -1,0 +1,488 @@
+﻿@model MY_CSC_PROJECT.ViewModels.ApprovalVM
+@inject IHttpContextAccessor httpContextAccessor
+
+@{
+    var superAdmin = httpContextAccessor.HttpContext.Session.GetString("SuperAdmin");
+    if (superAdmin != null)
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "Approval Stage";
+    }
+    else
+    {
+        Layout = "_Layout";
+        ViewData["Title"] = "Approval Stage";
+    }
+}
+
+<div class="d-flex align-items-center mt-3 mb-3">
+    <h4 class="me-auto">Approval Stage</h4>
+</div>
+
+<table class="table table-striped" id="TableIndex">
+    <thead>
+        <tr>
+            <th>
+                Full name
+            </th>
+            <th>
+                Special Eligibility
+            </th>
+            <th>
+                Remarks
+            </th>
+            <th>
+                Date acted
+            </th>
+            @if (ViewBag.CanForward != null && (bool)ViewBag.CanForward)
+            {
+                <th>Action</th>
+            }
+            else
+            {
+                <th hidden>Action</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.Approvals) {
+        <tr>
+                <td>
+                    @if (item.Document.Suffix == "N/A" || item.Document.Suffix == "N.A" || item.Document.Suffix == "NA" || item.Document.Suffix == "n/a")
+                    {
+
+                        @($"{item.Document.Firstname} {item.Document.Middlename} {item.Document.Lastname}")
+                    }
+                    else
+                    {
+                        @($"{item.Document.Firstname} {item.Document.Middlename} {item.Document.Lastname} {item.Document.Suffix}")
+                    }
+                </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Document.SpecialEligibility.SpecialEligibilityName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Document.Remarks)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DateActed)
+            </td>
+                @if (ViewBag.CanForward != null && (bool)ViewBag.CanForward)
+                {
+                    <td>
+                        <a class="btn btn-primary btn-sm" onclick="NextStageForm(@item.ApprovalID)">Review</a>
+                    </td>
+                }
+                else
+                {
+                    <td>
+                        <a class="btn btn-primary btn-sm" hidden>Review</a>
+                    </td>
+                }
+        </tr>
+}
+    </tbody>
+</table>
+
+<!-- Update Docs -->
+<form asp-action="NextStage" method="post">
+    <div class="modal fade" id="YesModal" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5 text-primary" id="exampleModalToggleLabel">Document Details</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <input asp-for="Approval.ApprovalID" class="approvalID form-control" hidden />
+                    <input asp-for="Approval.DocumentID" class="documentID form-control" hidden />
+
+                    <div class="mb-3 row">
+                        <label asp-for="Approval.DateActed" class="col-sm-2 col-form-label fw-bold"></label>
+                        <div class="col-sm-10">
+                            <input type="datetime" asp-for="Approval.DateActed" class="form-control" id="DateActed" style="background-color: #FFFFFF" readonly />
+                        </div>
+                    </div>
+
+                    <p class="text-start rounded bg-primary text-white bg-opacity-75 ps-2 p-1 mt-5">Type of Submission.</p>
+
+                    <div class="mb-3 row">
+                        <label class="col-sm-2 col-form-label fw-bold">Type of Submission:</label>
+                        <div class="col-sm-10">
+                            <select asp-for="Approval.Document.SubmissionType" class="form-control" id="SubmissionType" asp-items="ViewBag.SubmissionList" style="pointer-events: none;">
+                                <option value="" selected>-- Select Submission Type --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="OtherFOsSection">
+                        <div class="mb-3 row">
+                            <label class="col-sm-2 col-form-label fw-bold">FO name :</label>
+                            <div class="col-sm-10">
+                                <select asp-for="Approval.Document.OtherFOsID" class="form-control" id="OtherFOS" asp-items="ViewBag.OtherFOsID" style="pointer-events: none;"></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-start rounded bg-primary text-white bg-opacity-75 ps-2 p-1 mt-5">Personal Information.</p>
+
+                    <div class="mb-3 row">
+                        <label for="Lastname" class="col-sm-2 col-form-label fw-bold">Last name :</label>
+                        <div class="col-sm-10">
+                            <input asp-for="Approval.Document.Lastname" class="form-control" id="Lastname" style="background-color: #FFFFFF" readonly />
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label for="Firstname" class="col-sm-2 col-form-label fw-bold">First name :</label>
+                        <div class="col-sm-10">
+                            <input asp-for="Approval.Document.Firstname" class="form-control" id="Firstname" style="background-color: #FFFFFF" readonly />
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label for="Middlename" class="col-sm-2 col-form-label fw-bold">Middle name :</label>
+                        <div class="col-sm-10">
+                            <input asp-for="Approval.Document.Middlename" class="form-control" id="Middlename" style="background-color: #FFFFFF" readonly />
+                        </div>
+                    </div>
+
+                    <div id="SuffixSection">
+                        <div class="mb-3 row">
+                            <label class="col-sm-2 col-form-label fw-bold">Suffix :</label>
+                            <div class="col-sm-10">
+                                <input asp-for="Approval.Document.Suffix" class="form-control" id="Suffix" style="background-color: #FFFFFF" readonly />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label for="Gender" class="col-sm-2 col-form-label fw-bold">Gender :</label>
+                        <div class="col-sm-10">
+                            <select asp-for="Approval.Document.Gender" class="form-control" id="Gender" asp-items="ViewBag.GenderList" style="pointer-events: none;"></select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label for="DateofBirth" class="col-sm-2 col-form-label fw-bold">Date of birth :</label>
+                        <div class="col-sm-10">
+                            <input type="date" asp-for="Approval.Document.DateofBirth" class="form-control" id="DateofBirth" style="background-color: #FFFFFF" readonly />
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label for="PlaceofBirth" class="col-sm-2 col-form-label fw-bold">Place of birth :</label>
+                        <div class="col-sm-10">
+                            <input asp-for="Approval.Document.PlaceofBirth" class="form-control" id="PlaceofBirth" style="background-color: #FFFFFF" readonly />
+                        </div>
+                    </div>
+
+                    <p class="text-start rounded bg-primary text-white bg-opacity-75 ps-2 p-1 mt-5">Type of Special Eligibility.</p>
+
+                    <div class="mb-3 row">
+                        <label for="SpecialEligibility" class="col-sm-2 col-form-label fw-bold">Special eligibility :</label>
+                        <div class="col-sm-10">
+                            <select asp-for="Approval.Document.SpecialEligibilityID" class="form-control" id="SpecialEligibilityType" asp-items="ViewBag.SpecialEligibilityID" style="pointer-events: none;"></select>
+                        </div>
+                    </div>
+
+                    <div id="SchoolSection">
+                        <div class="mb-3 row">
+                            <label for="School" class="col-sm-2 col-form-label fw-bold">School name :</label>
+                            <div class="col-sm-10">
+                                <input asp-for="Approval.Document.School" class="form-control" id="School" style="background-color: #FFFFFF" readonly />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="AddressSection">
+                        <div class="mb-3 row">
+                            <label for="Address" class="col-sm-2 col-form-label fw-bold">Address :</label>
+                            <div class="col-sm-10">
+                                <input asp-for="Approval.Document.Address" class="form-control" id="Address" style="background-color: #FFFFFF" readonly />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="ProvinceSection">
+                        <div class="mb-3 row">
+                            <label for="Province" class="col-sm-2 col-form-label fw-bold">Province :</label>
+                            <div class="col-sm-10">
+                                <select asp-for="Approval.Document.ProvinceID" class="form-control" id="Province" asp-items="ViewBag.ProvinceID" style="pointer-events: none;"></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="PositionSection">
+                        <div class="mb-3 row">
+                            <label for="Position" class="col-sm-2 col-form-label fw-bold">Position :</label>
+                            <div class="col-sm-10">
+                                <select asp-for="Approval.Document.PositionID" class="form-control" id="Position" asp-items="ViewBag.PositionID" style="pointer-events: none;"></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="ToESection">
+                        <div class="mb-3 row">
+                            <label for="TOE" class="col-sm-2 col-form-label fw-bold">Type of eligibility :</label>
+                            <div class="col-sm-10">
+                                <input asp-for="Approval.Document.TypeofEligibility" class="form-control" id="TOE" style="background-color: #FFFFFF" readonly />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="OtherToESection">
+                        <div class="mb-5 row">
+                            <label for="OtherTOE" class="col-sm-2 col-form-label fw-bold">Other eligibility :</label>
+                            <div class="col-sm-10">
+                                <input asp-for="Approval.Document.OtherEligibility" class="form-control" id="OtherTOE" style="background-color: #FFFFFF" readonly />
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-start rounded bg-primary text-white bg-opacity-75 ps-2 p-1 mt-5">Remarks.</p>
+
+                    <div id="RemarksSection">
+                        <div class="mb-3 row">
+                            <label for="Remarks" class="col-sm-2 col-form-label fw-bold">Remarks :</label>
+                            <div class="col-sm-10">
+                                <input asp-for="Approval.Document.Remarks" class="form-control" id="Remarks" style="background-color: #FFFFFF" readonly />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" hidden>
+                        <label asp-for="Approval.Document.Status" class="control-label"></label>
+                        <select class="form-select" id="Status" asp-items="ViewBag.StatusList"></select>
+                    </div>
+
+                </div>
+                <div class="modal-footer d-flex align-items-center">
+                    <h5 class="me-auto text-danger fw-bold">DC's action</h5>
+
+                    <button type="button" class="me-2 btn btn-warning text-white btnNo" id="ComplianceBtn" data-bs-target="#NoModal" data-bs-toggle="modal">For compliance</button>
+                    <button type="submit" class="btn btn-primary">Submit to OD</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<form asp-action="RejectDocs" method="post" class="needs-validation form-rejection" novalidate>
+    <div class="modal fade" id="NoModal" aria-hidden="true" aria-labelledby="exampleModalToggleLabel2" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5 text-primary" id="exampleModalToggleLabel2">Compliance</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <input asp-for="Approval.ApprovalID" class="approvalID form-control" hidden />
+                    <input asp-for="Approval.DocumentID" class="documentID form-control" hidden />
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Approval.Document.Remarks" class="form-control" id="RejectRemarks" placeholder="Remarks" required />
+                        <label for="Remarks">Remarks</label>
+                        <span asp-validation-for="Approval.Document.Remarks" class="text-danger text-danger-remarks"></span>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btnBack" data-bs-target="#YesModal" data-bs-toggle="modal">Back to review</button>
+                    <button type="submit" class="btn btn-warning text-white">Save as compliance</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+
+    <script>
+        $(document).ready(function () {
+            $(".btnNo").click(function () {
+
+                $("#YesModal").modal("hide");
+            });
+            $(".btnBack").click(function () {
+                $("#NoModal").modal("hide");
+                $("#RejectRemarks").val("N/A");
+            });
+
+            let noModal = document.getElementById('NoModal');
+            let yesModal = document.getElementById('YesModal');
+
+            let rejectRemarks = document.getElementById('RejectRemarks');
+            let form = this.querySelector(".form-rejection");
+
+            let submissionType = document.getElementById('SubmissionType');
+            let suffix = document.getElementById('Suffix');
+            let specialEligibility = document.getElementById('SpecialEligibilityType');
+            let remarks = document.getElementById('Remarks');
+
+            let otherFOsSection = document.getElementById('OtherFOsSection');
+            let suffixSection = document.getElementById('SuffixSection');
+            let schoolSection = document.getElementById('SchoolSection');
+            let addressSection = document.getElementById('AddressSection');
+            let provinceSection = document.getElementById('ProvinceSection');
+            let positionSection = document.getElementById('PositionSection');
+            let toESection = document.getElementById('ToESection');
+            let otherToESection = document.getElementById('OtherToESection');
+            let remarksSection = document.getElementById('RemarksSection');
+
+            function updateModalValues() {
+
+                if (submissionType.value === "1") {
+                    otherFOsSection.style.display = 'none';
+                }
+
+                if (submissionType.value === "2") {
+                    otherFOsSection.style.display = 'block';
+                }
+
+                if (submissionType.value === "3") {
+                    otherFOsSection.style.display = 'none';
+                }
+
+                if (suffix.value == "N/A" || suffix.value == "n/a" || suffix.value == "n.a" || suffix.value == "N.A") {
+                    suffixSection.style.display = 'none';
+                }
+                else {
+                    suffixSection.style.display = 'block';
+                }
+
+                if (remarks.value == "N/A") {
+                    remarksSection.style.display = 'none';
+                }
+                else {
+                    remarksSection.style.display = 'block';
+                }
+
+                switch (specialEligibility.value) {
+                    case "1":
+                        schoolSection.style.display = 'block';
+                        addressSection.style.display = 'none';
+                        provinceSection.style.display = 'none';
+                        positionSection.style.display = 'none';
+                        toESection.style.display = 'none';
+                        otherToESection.style.display = 'none';
+                        break;
+                    case "2":
+                        schoolSection.style.display = 'none';
+                        addressSection.style.display = 'block';
+                        provinceSection.style.display = 'block';
+                        positionSection.style.display = 'block';
+                        toESection.style.display = 'none';
+                        otherToESection.style.display = 'none';
+                        break;
+                    case "3":
+                        schoolSection.style.display = 'none';
+                        addressSection.style.display = 'none';
+                        provinceSection.style.display = 'none';
+                        positionSection.style.display = 'none';
+                        toESection.style.display = 'block';
+                        otherToESection.style.display = 'none';
+                        break;
+                    case "4":
+                        schoolSection.style.display = 'none';
+                        addressSection.style.display = 'none';
+                        provinceSection.style.display = 'none';
+                        positionSection.style.display = 'none';
+                        toESection.style.display = 'none';
+                        otherToESection.style.display = 'block';
+                        break;
+
+                }
+            }
+
+            yesModal.addEventListener("shown.bs.modal", function () {
+                updateModalValues();
+            });
+
+            // Listen for select changes
+            submissionType.addEventListener('change', updateModalValues);
+
+            noModal.addEventListener('hidden.bs.modal', function () {
+
+                RejectRemarks.value = "";
+
+                rejectRemarks.classList.remove("is-invalid");
+                form.classList.remove("was-validated");
+
+                let rejectRemarksValidationMsg = form.querySelector(".text-danger-remarks");
+
+                if (rejectRemarksValidationMsg) {
+                    rejectRemarksValidationMsg.textContent = "";
+                }
+            });
+        });
+
+        var NextStageForm = function (id) {
+            $.ajax({
+                type: "GET",
+                url: "/ApprovalStages/GetDocs",
+                data: { getID: id },
+                success: function (document) {
+                    $("#YesModal").modal("show");
+                    $(".approvalID").val(id);
+                    $(".documentID").val(document.documentid);
+
+                    $("#SubmissionType").val(document.submission);
+                    $("#OtherFOS").val(document.otherfosid);
+                    $("#Remarks").val(document.remarks);
+                    $("#Lastname").val(document.lastname);
+                    $("#Firstname").val(document.firstname);
+                    $("#Middlename").val(document.middlename);
+                    $("#Suffix").val(document.suffix);
+                    $("#Gender").val(document.gender);
+                    $("#DateofBirth").val(document.dateofbirth);
+                    $("#PlaceofBirth").val(document.placeofbirth);
+                    $("#SpecialEligibilityType").val(document.specialeligibilityid);
+                    $("#School").val(document.school);
+                    $("#Address").val(document.address);
+                    $("#Province").val(document.provinceid);
+                    $("#Position").val(document.positionid);
+                    $("#TOE").val(document.toe);
+                    $("#OtherTOE").val(document.othertoe);
+                    $("#Status").val(document.statusid);
+                    $("#CreatedAt").val(document.createdat);
+                    $("#DateActed").val(document.dateacted);
+                }
+            });
+        }
+
+        var ConfirmForm = function (id) {
+            $("#DocsID").val(id);
+            $("#DeleteModal").modal("show");
+        };
+    </script>
+
+    <script>
+        (() => {
+            'use strict'
+
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            const forms = document.querySelectorAll('.needs-validation')
+
+            // Loop over them and prevent submission
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

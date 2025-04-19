@@ -1,0 +1,208 @@
+﻿@model MY_CSC_PROJECT.ViewModels.OtherFOsVM
+
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Other FO's";
+}
+
+<div class="d-flex align-items-center mt-3 mb-3">
+    <h4 class="me-auto">Other FO's</h4>
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#AddModal">
+        Add new
+    </button>
+</div>
+
+<table class="table table-striped" id="TableIndex">
+    <thead>
+        <tr>
+            <th>
+                Other fo id
+            </th>
+            <th>
+                Other fo name
+            </th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.OtherFOs) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.OtherFOsID)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.OtherFOsName)
+            </td>
+            <td>
+                    <a class="btn btn-success btn-sm" onclick="EditForm(@item.OtherFOsID)" id="EditForm">Edit</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+
+<!-- Add Other FO's Name -->
+<form asp-action="Create" method="post" class="needs-validation" novalidate>
+    <div class="modal fade" id="AddModal" tabindex="-1" aria-labelledby="sampleDocsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="sampleDocsModalLabel">ADD NEW FO</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" asp-for="FO.OtherFOsName" class="form-control" id="AddFOName" placeholder="FO name" required />
+                        <label for="AddFOName">FO name</label>
+                        <span asp-validation-for="FO.OtherFOsName" class="text-danger"></span>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button id="btnSave" type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Edit Other FO Name -->
+<form asp-action="Edit" id="EditFormModal" method="post" class="needs-validation" novalidate>
+    <div class="modal fade" id="EditModal" tabindex="-1" aria-labelledby="sampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+
+
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="sampleDocsModalLabel">EDIT FO</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input class="editID" asp-for="FO.OtherFOsID" hidden />
+
+                    <div class="form-floating mb-3">
+                        <input type="text" asp-for="FO.OtherFOsName" class="form-control" id="EditFOName" placeholder="FO name" required />
+                        <label for="EditFOName">FO name</label>
+                        <span asp-validation-for="FO.OtherFOsName" class="text-danger"></span>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let addModal = document.getElementById('AddModal');
+            let editModal = document.getElementById('EditModal');
+            let addFOName = document.getElementById('AddFOName');
+            let editFOName = document.getElementById('EditFOName');
+            let form = this.querySelector("form");
+
+            addModal.addEventListener('shown.bs.modal', function () {
+                addFOName.focus();
+            });
+
+            editModal.addEventListener('shown.bs.modal', function () {
+                editFOName.focus();
+            });
+
+            addModal.addEventListener('hidden.bs.modal', function () {
+                form.reset();
+                addFOName.classList.remove("is-invalid");
+                form.classList.remove("was-validated");
+
+                let validationMsg = form.querySelector(".text-danger");
+                if (validationMsg) {
+                    validationMsg.textContent = "";
+                }
+            });
+
+            editModal.addEventListener('hidden.bs.modal', function () {
+                form.reset();
+                editFOName.classList.remove("is-invalid");
+                form.classList.remove("was-validated");
+
+                let validationMsg = form.querySelector(".text-danger");
+                if (validationMsg) {
+                    validationMsg.textContent = "";
+                }
+            });
+        });
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            $("#btnDelete").click(function () {
+                var idDelete = $("#DocsID").val();
+
+                $.ajax({
+                    type: "POST",
+                    url: "/Documents/Delete",
+                    data: { intDelete: idDelete },
+                    success: function (result) {
+                        if (result) {
+                            $("#DocsID").val(null);
+                            window.location.href = "/Documents/Index";
+                        } else {
+                            alert("Oishi! Something went wrong.");
+                        }
+                    }
+                });
+            });
+        });
+
+        var EditForm = function (id) {
+            $.ajax({
+                type: "GET",
+                url: "/OtherFOs/GetOtherFOs",
+                data: { getID: id },
+                success: function (otherFOs) {
+                    $("#EditModal").modal("show");
+                    $(".editID").val(otherFOs.otherfosid);
+                    $("#EditFOName").val(otherFOs.otherfosname);
+                }
+            });
+        }
+
+        var ConfirmForm = function (id) {
+            $("#DocsID").val(id);
+            $("#DeleteModal").modal("show");
+        };
+    </script>
+
+    <script>
+        (() => {
+            'use strict'
+
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            const forms = document.querySelectorAll('.needs-validation')
+
+            // Loop over them and prevent submission
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

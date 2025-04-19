@@ -1,0 +1,39 @@
+﻿<!-- Export Modal -->
+<div class="modal fade" id="ExportExcelModal" tabindex="-1" aria-labelledby="sampleDocsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5 text-primary" id="sampleDocsModalLabel">Export to Excel</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="col">
+                    <div class="form-floating mb-3">
+                        <input type="date" class="form-control" id="fromDate" required />
+                        <label><span class="text-danger fw-bold">*</span> From:</label>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-floating mb-3">
+                        <input type="date" class="form-control" id="toDate" required />
+                        <label><span class="text-danger fw-bold">*</span> To:</label>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="form-floating mb-3">
+                        <input type="text" class="form-control" id="fileName" required />
+                        <label><span class="text-danger fw-bold">*</span> File name:</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary d-flex" id="btnExport" onclick="exportExcel()">
+                    <div id="loadingSpinner" class="d-none me-2">
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                    </div>
+                    Export
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
