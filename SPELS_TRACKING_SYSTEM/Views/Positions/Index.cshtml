@@ -1,0 +1,244 @@
+﻿@model SPELS_TRACKING_SYSTEM.ViewModels.PositionVM
+
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Positions";
+}
+
+<div class="d-flex align-items-center mt-3 mb-3">
+    <h4 class="me-auto">Positions</h4>
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#AddModal">
+        Add new
+    </button>
+</div>
+
+<table class="table table-striped" id="TableIndex">
+    <thead>
+        <tr>
+            <th>
+                Position id
+            </th>
+            <th>
+                Position name
+            </th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.Positions) {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PositionID)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.PositionName)
+                </td>
+                <td>
+                <a class="btn btn-success btn-sm" onclick="EditForm(@item.PositionID)" id="EditForm">Edit</a>
+
+                @if(item.PositionID == 1)
+                {
+                    <a class="btn btn-danger btn-sm" hidden>Delete</a>
+                }
+                else
+                {
+                    @:| <a class="btn btn-danger btn-sm" onclick="ConfirmForm(@item.PositionID)">Delete</a>
+                }
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+
+<!-- Add Position Name -->
+<form asp-action="Create" method="post" class="needs-validation" novalidate>
+    <div class="modal fade" id="AddModal" tabindex="-1" aria-labelledby="sampleDocsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="sampleDocsModalLabel">ADD NEW POSITION</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" asp-for="Position.PositionName" class="form-control" id="AddPositionName" placeholder="Position name" required />
+                        <label for="AddPositionName">Position name</label>
+                        <span asp-validation-for="Position.PositionName" class="text-danger"></span>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button id="btnSave" type="submit" class="btn btn-primary btn-save d-flex">
+                        <div class="loading-spinner d-none me-2">
+                            <div class="spinner-border spinner-border-sm" role="status"></div>
+                        </div>
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Edit Province Name -->
+<form asp-action="Edit" id="EditFormModal" method="post" class="needs-validation" novalidate>
+    <div class="modal fade" id="EditModal" tabindex="-1" aria-labelledby="sampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="sampleDocsModalLabel">EDIT POSITION</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input class="editID" asp-for="Position.PositionID" hidden />
+
+                    <div class="form-floating mb-3">
+                        <input type="text" asp-for="Position.PositionName" class="form-control" id="EditPositionName" placeholder="Position name" required />
+                        <label for="EditPositionName">Position name</label>
+                        <span asp-validation-for="Position.PositionName" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary btn-save d-flex">
+                        <div class="loading-spinner d-none me-2">
+                            <div class="spinner-border spinner-border-sm" role="status"></div>
+                        </div>
+                        Save changes
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Delete Position -->
+<form asp-action="Delete" method="post">
+    <div class="modal fade" id="DeleteModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5 text-danger" id="exampleModalLabel">Delete Position</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input id="PositionID" name="PositionID" hidden />
+                    <h5>Are you sure to delete this position?</h5>
+                </div>
+                <div class="modal-footer">
+                    <button id="btnDelete" type="button" class="btn btn-danger">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let addModal = document.getElementById('AddModal');
+            let editModal = document.getElementById('EditModal');
+            let addPositionName = document.getElementById('AddPositionName');
+            let editPositionName = document.getElementById('EditPositionName');
+            let form = this.querySelector("form");
+
+            addModal.addEventListener('shown.bs.modal', function () {
+                addPositionName.focus();
+            });
+
+            editModal.addEventListener('shown.bs.modal', function () {
+                editPositionName.focus();
+            });
+
+            addModal.addEventListener('hidden.bs.modal', function () {
+                form.reset();
+                form.classList.remove("was-validated");
+
+                let validation = form.querySelectorAll("span.text-danger");
+                validation.forEach(function (text) {
+                    text.textContent = "";
+                });
+            });
+
+            editModal.addEventListener('hidden.bs.modal', function () {
+                form.reset();
+                editPositionName.classList.remove("is-invalid");
+                form.classList.remove("was-validated");
+
+                let validationMsg = form.querySelector(".text-danger");
+                if (validationMsg) {
+                    validationMsg.textContent = "";
+                }
+            });
+        });
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            $("#btnDelete").click(function () {
+                var idDelete = $("#PositionID").val();
+
+                $.ajax({
+                    type: "POST",
+                    url: "/Positions/Delete",
+                    data: { intDelete: idDelete },
+                    success: function (result) {
+                        if (result) {
+                            $("#PositionID").val(null);
+                            window.location.href = "/Positions/Index";
+                        } else {
+                            alert("Oishi! Something went wrong.");
+                        }
+                    }
+                });
+            });
+        });
+
+        var EditForm = function (id) {
+            $.ajax({
+                type: "GET",
+                url: "/Positions/GetPosition",
+                data: { getID: id },
+                success: function (position) {
+                    $("#EditModal").modal("show");
+                    $(".editID").val(position.positionid);
+                    $("#EditPositionName").val(position.positionname);
+                }
+            });
+        }
+
+        var ConfirmForm = function (id) {
+            $("#PositionID").val(id);
+            $("#DeleteModal").modal("show");
+        };
+    </script>
+
+    <script>
+        (() => {
+            'use strict'
+
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            const forms = document.querySelectorAll('.needs-validation')
+
+            // Loop over them and prevent submission
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,57 @@
+﻿@inject IHttpContextAccessor httpContextAccessor
+
+@{
+    var superAdmin = httpContextAccessor.HttpContext.Session.GetString("SuperAdmin");
+    if (superAdmin != null)
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "About Us";
+    }
+    else
+    {
+        Layout = "_Layout";
+        ViewData["Title"] = "About Us";
+    }
+}
+<div class="d-flex align-items-center mt-3 mb-3">
+    <h4 class="me-auto">@ViewData["Title"]</h4>
+</div>
+
+
+<div class="container">
+    <section class="mb-4">
+        <h5>My Project</h5>
+        <p>
+            The SPELS Tracking System is a Examination Services Division project developed by a team of 4th-year Information Technology student from Asian College of Technology.
+            Created as part of on-the-job training (OJT) requirement, this system represents culmination of knowledge and skills gained throughout academic journey.
+        </p>
+    </section>
+    <section class="mb-4">
+        <h5>Who Am I</h5>
+        <p>
+            I am a passionate person of final-year student specializing in software development and information systems.
+            Through my coursework and hands-on experience, I've identified the need for more efficient digital solutions in the Examination Services Division (ESD),
+            particularly in document management and tracking.
+        </p>
+    </section>
+    <section class="mb-4">
+        <h5>My Solution</h5>
+        <p>My SPELS Tracking System will enhanced key challenges by ESD professionals:</p>
+        <ul>
+            <li><strong>Compliance Monitoring Dashboard:</strong> Track timelines for submissions, evaluations, and approvals to ensure adherence to CSC regulations.</li>
+            <li><strong>Audit Trail and Logging:</strong> Record all document edits, access logs, and user actions for accountability and auditing purposes.</li>
+            <li><strong>Custom Report Generation:</strong> Generate downloadable reports (Excel) for compliance, audit readiness, or management summaries.</li>
+            <li><strong>Policy-Based Access Control:</strong> Allow specific document access rules based on civil service roles (e.g., Receiver, Processor, Approver).</li>
+            <li><strong>Search Functionality:</strong> Filtering and keyword search capabilities.</li>
+            <li><strong>User-Friendly Interface:</strong> Intuitive design requiring minimal training.</li>
+        </ul>
+    </section>
+    <section class="mb-4">
+        <h5>My Team</h5>
+        <p>This system was developed by the following student:</p>
+        <ul>
+            <li><strong>Arjahn V. Milar</strong></li>
+        </ul>
+        <p>Bachelor of Science in Information Technology<br>Asian College of Technology (ACTIEF)</p>
+    </section>
+</div>

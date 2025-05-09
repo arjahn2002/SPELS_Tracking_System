@@ -1,0 +1,25 @@
+﻿<form asp-action="Delete" method="post">
+    <div class="modal fade" id="DeleteModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5 text-danger" id="exampleModalLabel">Delete Document</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input id="DocsID" name="DocsID" hidden />
+                    <label>Last name: </label>
+                    <input id="Lastname" class="form-control pe-none" />
+                    <label>First name: </label>
+                    <input id="Firstname" class="form-control pe-none" />
+                    <label>Middle name: </label>
+                    <input id="Middlename" class="form-control pe-none" />
+                </div>
+                <div class="modal-footer d-flex justify-content-between align-items-center w-100">
+                    <p>Are you sure to delete this document?</p>
+                    <button id="btnDelete" type="button" class="btn btn-danger">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

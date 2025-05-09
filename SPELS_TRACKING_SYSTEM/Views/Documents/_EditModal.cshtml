@@ -1,0 +1,177 @@
+﻿@model SPELS_TRACKING_SYSTEM.ViewModels.DocumentVM
+
+<form asp-action="Edit" method="post" class="needs-validation" novalidate>
+    <div class="modal fade" id="EditDocsModal" tabindex="-1" aria-labelledby="sampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+
+
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5 text-primary" id="sampleDocsModalLabel">Edit Document</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input class="editID" asp-for="Document.DocumentID" hidden />
+
+                    <div class="row align-items-start">
+
+                        <div class="col">
+                            <div class="form-floating mb-3">
+                                <select asp-for="Document.SubmissionType" class="form-select" id="EditSubmissionType" asp-items="ViewBag.SubmissionList" required>
+                                    <option value="" selected>-- Select Submission Type --</option>
+                                </select>
+                                <label><span class="text-danger fw-bold">*</span> Submission type</label>
+                                <span asp-validation-for="Document.SubmissionType" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="col" id="EditFOSection">
+                            <div class="form-floating mb-3">
+                                <select asp-for="Document.OtherFOsID" class="form-select" id="EditOtherFOS" asp-items="ViewBag.OtherFOsID" required>
+                                    <option value="" selected>-- Select Other FO's --</option>
+                                </select>
+                                <label><span class="text-danger fw-bold">*</span> Other FO's</label>
+                                <span asp-validation-for="Document.OtherFOsID" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col" id="EditRemarksSection">
+                            <div class="form-floating mb-3">
+                                <input asp-for="Document.Remarks" class="form-control" id="EditRemarks" value="N/A" required />
+                                <label><span class="text-danger fw-bold">*</span> Remarks</label>
+                                <span asp-validation-for="Document.Remarks" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-floating mb-3">
+                                <input type="text" asp-for="Document.Lastname" class="form-control" id="EditLastname" required />
+                                <label><span class="text-danger fw-bold">*</span> Last name</label>
+                                <span asp-validation-for="Document.Lastname" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="form-floating mb-3">
+                                <input type="text" asp-for="Document.Firstname" class="form-control" id="EditFirstname" required />
+                                <label><span class="text-danger fw-bold">*</span> First name</label>
+                                <span asp-validation-for="Document.Firstname" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="form-floating mb-3">
+                                <input type="text" asp-for="Document.Middlename" class="form-control" id="EditMiddlename" required />
+                                <label><span class="text-danger fw-bold">*</span> Middle name</label>
+                                <span asp-validation-for="Document.Middlename" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="form-floating mb-3">
+                                <input type="text" asp-for="Document.Suffix" class="form-control" id="EditSuffix" />
+                                <label><span class="text-danger fw-bold">*</span> Suffix</label>
+                                <span asp-validation-for="Document.Suffix" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <div class="form-floating mb-3">
+                                <select asp-for="Document.GenderType" class="form-select" id="EditGender" asp-items="ViewBag.GenderList" required>
+                                    <option value="" selected>-- Select Gender --</option>
+                                </select>
+                                <label><span class="text-danger fw-bold">*</span> Gender</label>
+                                <span asp-validation-for="Document.GenderType" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="form-floating mb-3">
+                                <input asp-for="Document.DateofBirth" class="form-control" id="EditDOB" value="" required />
+                                <label><span class="text-danger fw-bold">*</span> Date of birth</label>
+                                <span asp-validation-for="Document.DateofBirth" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Document.PlaceofBirth" class="form-control" id="EditPOB" required />
+                        <label><span class="text-danger fw-bold">*</span> Place of birth</label>
+                        <span asp-validation-for="Document.PlaceofBirth" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <select asp-for="Document.SpecialEligibilityID" class="form-select" id="EditSE" asp-items="ViewBag.SpecialEligibilityID" required>
+                            <option value="" selected>-- Select Special Eligibility --</option>
+                        </select>
+                        <label><span class="text-danger fw-bold">*</span> Special Eligibility</label>
+                        <span asp-validation-for="Document.SpecialEligibilityID" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating mb-3" id="EditSchoolSection">
+                        <input asp-for="Document.School" class="form-control" id="EditSchool" required />
+                        <label><span class="text-danger fw-bold">*</span> School name</label>
+                        <span asp-validation-for="Document.School" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating mb-3" id="EditAddressSection">
+                        <input asp-for="Document.Address" class="form-control" id="EditAddress" required />
+                        <label><span class="text-danger fw-bold">*</span> Barangay, Municipality / City</label>
+                        <span asp-validation-for="Document.Address" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating mb-3" id="EditProvinceSection">
+                        <select asp-for="Document.ProvinceID" class="form-select" id="EditProvince" asp-items="ViewBag.ProvinceID" required>
+                            <option value="" selected>-- Select Province --</option>
+                        </select>
+                        <label><span class="text-danger fw-bold">*</span> Province</label>
+                        <span asp-validation-for="Document.ProvinceID" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating mb-3" id="EditPositionSection">
+                        <select asp-for="Document.PositionID" class="form-select" id="EditPosition" asp-items="ViewBag.PositionID" required>
+                            <option value="" selected>-- Select Position --</option>
+                        </select>
+                        <label><span class="text-danger fw-bold">*</span> Position</label>
+                        <span asp-validation-for="Document.PositionID" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating mb-3" id="EditToESection">
+                        <input asp-for="Document.TypeofEligibility" class="form-control" id="EditTypeofEligibility" required />
+                        <label><span class="text-danger fw-bold">*</span> Type of eligibility</label>
+                        <span asp-validation-for="Document.TypeofEligibility" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating mb-3" id="EditOtherToESection">
+                        <input asp-for="Document.OtherEligibility" class="form-control" id="EditOtherToE" required />
+                        <label><span class="text-danger fw-bold">*</span> Others</label>
+                        <span asp-validation-for="Document.OtherEligibility" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group" hidden>
+                        <label asp-for="Document.StatusType" class="control-label"></label>
+                        <select asp-for="Document.StatusType" class="form-select" id="EditStatus" asp-items="ViewBag.StatusList"></select>
+                    </div>
+
+                    <div class="form-group" hidden>
+                        <label asp-for="Document.DateReceived" class="control-label"></label>
+                        <input type="datetime-local" asp-for="Document.DateReceived" class="form-control" id="EditCreatedAt" />
+                        <span asp-validation-for="Document.DateReceived" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary btn-save d-flex">
+                        <div class="loading-spinner d-none me-2">
+                            <div class="spinner-border spinner-border-sm" role="status"></div>
+                        </div>
+                        Save changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

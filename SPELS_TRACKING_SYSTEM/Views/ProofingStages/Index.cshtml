@@ -1,0 +1,513 @@
+﻿@model SPELS_TRACKING_SYSTEM.ViewModels.ProofingVM
+@inject IHttpContextAccessor httpContextAccessor
+
+@{
+    var superAdmin = httpContextAccessor.HttpContext.Session.GetString("SuperAdmin");
+    if (superAdmin != null)
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "Proofing Stage";
+    }
+    else
+    {
+        Layout = "_Layout";
+        ViewData["Title"] = "Proofing Stage";
+    }
+}
+
+<div class="d-flex align-items-center mt-3 mb-3">
+    <h4 class="me-auto">Proofing Stage</h4>
+</div>
+
+<table class="table table-striped" id="TableIndex">
+    <thead>
+        <tr>
+            <th>
+                Full name
+            </th>
+            <th>
+                Special Eligibility
+            </th>
+            <th>
+                Remarks
+            </th>
+            <th>
+                Date acted
+            </th>
+            @if (ViewBag.CanForward != null && (bool)ViewBag.CanForward)
+            {
+                <th></th>
+            }
+            else
+            {
+                <th hidden></th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.Proofings) {
+        <tr>
+                <td>
+                    @{
+                        var hasValidMiddleName = !(item.Document.Middlename == "N/A" || item.Document.Middlename == "N.A" || item.Document.Middlename == "NA" || item.Document.Middlename == "n/a" || item.Document.Middlename == "na");
+                        var hasValidSuffix = !(item.Document.Suffix == "N/A" || item.Document.Suffix == "N.A" || item.Document.Suffix == "NA" || item.Document.Suffix == "n/a" || item.Document.Suffix == "na");
+
+                        var fullName = item.Document.Firstname;
+
+                        if (hasValidMiddleName)
+                        {
+                            fullName += $" {item.Document.Middlename}";
+                        }
+
+                        fullName += $" {item.Document.Lastname}";
+
+                        if (hasValidSuffix)
+                        {
+                            fullName += $" {item.Document.Suffix}";
+                        }
+                    }
+
+                    @fullName
+                </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Document.SpecialEligibility.SpecialEligibilityName)
+            </td>
+            <td>
+                    @if (item.Document.Remarks == "N/A")
+                    {
+
+                    }
+                    else
+                    {
+                        @Html.DisplayFor(modelItem => item.Document.Remarks)
+                    }
+            </td>
+
+            <td>
+                @Html.DisplayFor(modelItem => item.DateActed)
+            </td>
+                @if (ViewBag.CanForward != null && (bool)ViewBag.CanForward)
+                {
+                    <td>
+                        <a class="btn btn-primary btn-sm" onclick="NextStageForm(@item.ProofingID)">Review</a>
+                    </td>
+                }
+                else
+                {
+                    <td>
+                        <a class="btn btn-primary btn-sm" hidden>Review</a>
+                    </td>
+                }
+        </tr>
+}
+    </tbody>
+</table>
+
+<!-- Update Docs -->
+<form asp-action="NextStage" method="post">
+    <div class="modal fade" id="YesModal" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5 text-primary" id="exampleModalToggleLabel">DOCUMENT DETAILS</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+
+                    <input asp-for="Proofing.ProofingID" class="proofingID form-control" hidden />
+                    <input asp-for="Proofing.DocumentID" class="documentID form-control" hidden />
+
+                    <div class="mb-3 row">
+                        <label asp-for="Proofing.DateActed" class="col-sm-2 col-form-label fw-bold"></label>
+                        <div class="col-sm-10">
+                            <input type="datetime" asp-for="Proofing.DateActed" class="form-control pe-none" id="DateActed" />
+                        </div>
+                    </div>
+
+                    <p class="text-start rounded bg-primary text-white bg-opacity-75 ps-2 p-1 mt-5">Type of Submission.</p>
+
+                    <div class="mb-3 row">
+                        <label class="col-sm-2 col-form-label fw-bold">Type of Submission:</label>
+                        <div class="col-sm-10">
+                            <select asp-for="Proofing.Document.SubmissionType" class="form-control" id="SubmissionType" asp-items="ViewBag.SubmissionList" style="pointer-events: none;">
+                                <option value="" selected>-- Select Submission Type --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="OtherFOsSection">
+                        <div class="mb-3 row">
+                            <label class="col-sm-2 col-form-label fw-bold">FO name :</label>
+                            <div class="col-sm-10">
+                                <select asp-for="Proofing.Document.OtherFOsID" class="form-control" id="OtherFOS" asp-items="ViewBag.OtherFOsID" style="pointer-events: none;"></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-start rounded bg-primary text-white bg-opacity-75 ps-2 p-1 mt-5">Personal Information.</p>
+
+                    <div class="mb-3 row">
+                        <label for="Lastname" class="col-sm-2 col-form-label fw-bold">Last name :</label>
+                        <div class="col-sm-10">
+                            <input asp-for="Proofing.Document.Lastname" class="form-control pe-none" id="Lastname" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label for="Firstname" class="col-sm-2 col-form-label fw-bold">First name :</label>
+                        <div class="col-sm-10">
+                            <input asp-for="Proofing.Document.Firstname" class="form-control pe-none" id="Firstname" />
+                        </div>
+                    </div>
+
+                    <div id="MiddlenameSection">
+                        <div class="mb-3 row">
+                            <label for="Middlename" class="col-sm-2 col-form-label fw-bold">Middle name :</label>
+                            <div class="col-sm-10">
+                                <input asp-for="Proofing.Document.Middlename" class="form-control pe-none" id="Middlename" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="SuffixSection">
+                        <div class="mb-3 row">
+                            <label class="col-sm-2 col-form-label fw-bold">Suffix :</label>
+                            <div class="col-sm-10">
+                                <input asp-for="Proofing.Document.Suffix" class="form-control pe-none" id="Suffix" />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 row">
+                        <label for="Gender" class="col-sm-2 col-form-label fw-bold">Gender :</label>
+                        <div class="col-sm-10">
+                            <select asp-for="Proofing.Document.GenderType" class="form-control pe-none" id="Gender" asp-items="ViewBag.GenderList"></select>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label for="DateofBirth" class="col-sm-2 col-form-label fw-bold">Date of birth :</label>
+                        <div class="col-sm-10">
+                            <input type="date" asp-for="Proofing.Document.DateofBirth" class="form-control pe-none" id="DateofBirth" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3 row">
+                        <label for="PlaceofBirth" class="col-sm-2 col-form-label fw-bold">Place of birth :</label>
+                        <div class="col-sm-10">
+                            <input asp-for="Proofing.Document.PlaceofBirth" class="form-control pe-none" id="PlaceofBirth" />
+                        </div>
+                    </div>
+
+                    <p class="text-start rounded bg-primary text-white bg-opacity-75 ps-2 p-1 mt-5">Type of Special Eligibility.</p>
+
+                    <div class="mb-3 row">
+                        <label for="SpecialEligibility" class="col-sm-2 col-form-label fw-bold">Special eligibility :</label>
+                        <div class="col-sm-10">
+                            <select asp-for="Proofing.Document.SpecialEligibilityID" class="form-control pe-none" id="SpecialEligibilityType" asp-items="ViewBag.SpecialEligibilityID"></select>
+                        </div>
+                    </div>
+
+                    <div id="SchoolSection">
+                        <div class="mb-3 row">
+                            <label for="School" class="col-sm-2 col-form-label fw-bold">School name :</label>
+                            <div class="col-sm-10">
+                                <input asp-for="Proofing.Document.School" class="form-control pe-none" id="School" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="AddressSection">
+                        <div class="mb-3 row">
+                            <label for="Address" class="col-sm-2 col-form-label fw-bold">Address :</label>
+                            <div class="col-sm-10">
+                                <input asp-for="Proofing.Document.Address" class="form-control pe-none" id="Address" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="ProvinceSection">
+                        <div class="mb-3 row">
+                            <label for="Province" class="col-sm-2 col-form-label fw-bold">Province :</label>
+                            <div class="col-sm-10">
+                                <select asp-for="Proofing.Document.ProvinceID" class="form-control pe-none" id="Province" asp-items="ViewBag.ProvinceID"></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="PositionSection">
+                        <div class="mb-3 row">
+                            <label for="Position" class="col-sm-2 col-form-label fw-bold">Position :</label>
+                            <div class="col-sm-10">
+                                <select asp-for="Proofing.Document.PositionID" class="form-control pe-none" id="Position" asp-items="ViewBag.PositionID"></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="ToESection">
+                        <div class="mb-3 row">
+                            <label for="TOE" class="col-sm-2 col-form-label fw-bold">Type of eligibility :</label>
+                            <div class="col-sm-10">
+                                <input asp-for="Proofing.Document.TypeofEligibility" class="form-control pe-none" id="TOE" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="OtherToESection">
+                        <div class="mb-5 row">
+                            <label for="OtherTOE" class="col-sm-2 col-form-label fw-bold">Other eligibility :</label>
+                            <div class="col-sm-10">
+                                <input asp-for="Proofing.Document.OtherEligibility" class="form-control pe-none" id="OtherTOE" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-start rounded bg-primary text-white bg-opacity-75 ps-2 p-1 mt-5">Remarks.</p>
+                    
+                    <div id="RemarksSection">
+                        <div class="mb-3 row">
+                            <label for="Remarks" class="col-sm-2 col-form-label fw-bold">Remarks :</label>
+                            <div class="col-sm-10">
+                                <input asp-for="Proofing.Document.Remarks" class="form-control pe-none" id="Remarks" />
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" hidden>
+                        <label asp-for="Proofing.Document.StatusType" class="control-label"></label>
+                        <select class="form-select" id="Status" asp-items="ViewBag.StatusList"></select>
+                    </div>
+
+
+                </div>
+                <div class="modal-footer d-flex align-items-center">
+                    <h5 class="me-auto text-danger fw-bold">DC's action</h5>
+                    <button type="button" class="me-2 btn btn-warning text-white btnNo" id="ComplianceBtn" data-bs-target="#NoModal" data-bs-toggle="modal">Reprinting</button>
+                    <button type="submit" class="btn btn-primary btn-save d-flex">
+                        <div class="loading-spinner d-none me-2">
+                            <div class="spinner-border spinner-border-sm" role="status"></div>
+                        </div>
+                        For posting
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<form asp-action="RejectDocs" method="post" class="needs-validation form-rejection" novalidate>
+    <div class="modal fade" id="NoModal" aria-hidden="true" aria-labelledby="exampleModalToggleLabel2" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5 text-primary" id="exampleModalToggleLabel2">Compliance</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <input asp-for="Proofing.ProofingID" class="proofingID form-control" hidden />
+                    <input asp-for="Proofing.DocumentID" class="documentID form-control" hidden />
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Proofing.Document.Remarks" class="form-control" id="RejectRemarks" placeholder="Remarks" required />
+                        <label for="Remarks">Remarks</label>
+                        <span asp-validation-for="Proofing.Document.Remarks" class="text-danger text-danger-remarks"></span>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary btnBack" data-bs-target="#YesModal" data-bs-toggle="modal">Back to review</button>
+                    <button type="submit" class="btn btn-warning text-white btn-save d-flex">
+                        <div class="loading-spinner d-none me-2">
+                            <div class="spinner-border spinner-border-sm" role="status"></div>
+                        </div>
+                        Reprint
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+
+    <script>
+        function updateModalValues() {
+            let submissionType = document.getElementById('SubmissionType');
+            let suffix = document.getElementById('Suffix');
+            let specialEligibility = document.getElementById('SpecialEligibilityType');
+            let remarks = document.getElementById('Remarks');
+            let middlename = document.getElementById('Middlename');
+
+            let otherFOsSection = document.getElementById('OtherFOsSection');
+            let suffixSection = document.getElementById('SuffixSection');
+            let middlenameSection = document.getElementById('MiddlenameSection');
+            let schoolSection = document.getElementById('SchoolSection');
+            let addressSection = document.getElementById('AddressSection');
+            let provinceSection = document.getElementById('ProvinceSection');
+            let positionSection = document.getElementById('PositionSection');
+            let toESection = document.getElementById('ToESection');
+            let otherToESection = document.getElementById('OtherToESection');
+            let remarksSection = document.getElementById('RemarksSection');
+
+            if (submissionType.value === "2") {
+                otherFOsSection.style.display = 'block';
+            } else {
+                otherFOsSection.style.display = 'none';
+            }
+
+            if (["n/a", "na", "N/A"].includes(middlename.value.trim().toLowerCase())) {
+                middlenameSection.style.display = 'none';
+            } else {
+                middlenameSection.style.display = 'block';
+            }
+
+            if (!suffix.value || ["n/a", "n.a", "na", "N.A", "N/A"].includes(suffix.value.trim().toLowerCase())) {
+                suffixSection.style.display = 'none';
+            } else {
+                suffixSection.style.display = 'block';
+            }
+
+            if (remarks.value.trim().toLowerCase() === "n/a") {
+                remarksSection.style.display = 'none';
+            } else {
+                remarksSection.style.display = 'block';
+            }
+
+            switch (specialEligibility.value) {
+                case "1":
+                    schoolSection.style.display = 'block';
+                    addressSection.style.display = 'none';
+                    provinceSection.style.display = 'none';
+                    positionSection.style.display = 'none';
+                    toESection.style.display = 'none';
+                    otherToESection.style.display = 'none';
+                    break;
+                case "2":
+                    schoolSection.style.display = 'none';
+                    addressSection.style.display = 'block';
+                    provinceSection.style.display = 'block';
+                    positionSection.style.display = 'block';
+                    toESection.style.display = 'none';
+                    otherToESection.style.display = 'none';
+                    break;
+                case "3":
+                    schoolSection.style.display = 'none';
+                    addressSection.style.display = 'none';
+                    provinceSection.style.display = 'none';
+                    positionSection.style.display = 'none';
+                    toESection.style.display = 'block';
+                    otherToESection.style.display = 'none';
+                    break;
+                case "4":
+                    schoolSection.style.display = 'none';
+                    addressSection.style.display = 'none';
+                    provinceSection.style.display = 'none';
+                    positionSection.style.display = 'none';
+                    toESection.style.display = 'none';
+                    otherToESection.style.display = 'block';
+                    break;
+            }
+        }
+
+        $(document).ready(function () {
+            $(".btnNo").click(function () {
+                $("#YesModal").modal("hide");
+                $("#RejectRemarks").val("");
+            });
+
+            $(".btnBack").click(function () {
+                $("#NoModal").modal("hide");
+                $("#RejectRemarks").val("N/A");
+            });
+
+            let noModal = document.getElementById('NoModal');
+            let rejectRemarks = document.getElementById('RejectRemarks');
+            let form = document.querySelector(".form-rejection");
+
+            noModal.addEventListener('hidden.bs.modal', function () {
+                rejectRemarks.value = "";
+                rejectRemarks.classList.remove("is-invalid");
+                form.classList.remove("was-validated");
+                let rejectRemarksValidationMsg = form.querySelector(".text-danger-remarks");
+                if (rejectRemarksValidationMsg) {
+                    rejectRemarksValidationMsg.textContent = "";
+                }
+            });
+
+            let submissionType = document.getElementById('SubmissionType');
+            if (submissionType) {
+                submissionType.addEventListener('change', updateModalValues);
+            }
+        });
+
+        var NextStageForm = function (id) {
+            $.ajax({
+                type: "GET",
+                url: "/ProofingStages/GetDocs",
+                data: { getID: id },
+                success: function (response) {
+                    $(".proofingID").val(id);
+                    $(".documentID").val(response.documentid);
+                    $("#SubmissionType").val(response.submission);
+                    $("#OtherFOS").val(response.otherfosid);
+                    $("#Remarks").val(response.remarks);
+                    $("#Lastname").val(response.lastname);
+                    $("#Firstname").val(response.firstname);
+                    $("#Middlename").val(response.middlename);
+                    $("#Suffix").val(response.suffix);
+                    $("#Gender").val(response.gender);
+                    $("#DateofBirth").val(response.dateofbirth);
+                    $("#PlaceofBirth").val(response.placeofbirth);
+                    $("#SpecialEligibilityType").val(response.specialeligibilityid);
+                    $("#School").val(response.school);
+                    $("#Address").val(response.address);
+                    $("#Province").val(response.provinceid);
+                    $("#Position").val(response.positionid);
+                    $("#TOE").val(response.toe);
+                    $("#OtherTOE").val(response.othertoe);
+                    $("#Status").val(response.statusid);
+                    $("#CreatedAt").val(response.createdat);
+                    $("#DateActed").val(response.dateacted);
+
+                    updateModalValues(); // Apply logic after fields are populated
+                    const modal = new bootstrap.Modal(document.getElementById("YesModal"));
+                    modal.show();
+                }
+            });
+        }
+
+        var ConfirmForm = function (id) {
+            $("#DocsID").val(id);
+            $("#DeleteModal").modal("show");
+        };
+    </script>
+
+    <script>
+        (() => {
+            'use strict'
+
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            const forms = document.querySelectorAll('.needs-validation')
+
+            // Loop over them and prevent submission
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
+
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,25 @@
+﻿<!DOCTYPE html>
+<html lang="en" style="background-color: #FDFDFD">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] | SPELS</title>
+    <link rel="icon" type="image/png" href="~/img/login-logo.png" />
+    <link rel="stylesheet" href="~/css/account.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/SPELS_TRACKING_SYSTEM.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/fontawesome/css/all.css" asp-append-version="true" />
+
+</head>
+<body>
+    <div>
+        <main>
+            @RenderBody()
+        </main>
+    </div>
+
+    <!--Container Main end-->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
