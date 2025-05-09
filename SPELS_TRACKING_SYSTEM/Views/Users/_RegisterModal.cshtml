@@ -1,0 +1,56 @@
+﻿@model SPELS_TRACKING_SYSTEM.ViewModels.UserVM
+
+<!-- Add User Account -->
+<form asp-action="Create" method="post" class="needs-validation" novalidate>
+    <div class="modal fade" id="AddUserModal" tabindex="-1" aria-labelledby="sampleDocsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5 text-primary" id="sampleDocsModalLabel">Add New Account</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" asp-for="FullName" class="form-control" id="AddFullName" placeholder="Full name" required />
+                        <label for="AddStatusName">Full name</label>
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input type="text" asp-for="Username" class="form-control" id="AddUsername" placeholder="Username" required />
+                        <label for="AddStatusName">Username</label>
+                        <span asp-validation-for="Username" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input type="text" asp-for="Password" class="form-control" id="AddPassword" placeholder="Password" required />
+                        <label for="AddStatusName">Password</label>
+                        <span asp-validation-for="Password" class="text-danger"></span>
+                    </div>
+                    <div class="form-floating mb-3">
+                        <input type="text" asp-for="ConfirmPassword" class="form-control" id="AddConfirmPassword" placeholder="Confirm Password" required />
+                        <label for="AddStatusName">Confirm Password</label>
+                        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <select asp-for="RoleID" class="form-select" id="AddRole" asp-items="ViewBag.RoleID" required>
+                            <option value="" selected>-- Select a user role --</option>
+                        </select>
+                        <label><span class="text-danger fw-bold">*</span> Role</label>
+                        <span asp-validation-for="RoleID" class="text-danger"></span>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button id="btnSave" type="submit" class="btn btn-primary btn-save d-flex">
+                        <div class="loading-spinner d-none me-2">
+                            <div class="spinner-border spinner-border-sm" role="status"></div>
+                        </div>
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>

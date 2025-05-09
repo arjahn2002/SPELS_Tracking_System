@@ -1,0 +1,136 @@
+@font-face {
+    font-family: 'Poppins';
+    src: url('/font/Poppins/Poppins-Regular.ttf') format('truetype'), url('/font/Poppins/Poppins-Bold.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+* {
+    font-family: 'Poppins';
+    font-size: 14px;
+}
+
+html {
+  font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+body {
+    background-color: #FAF9F6;
+}
+
+#loader-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(255, 255, 255, 0.6);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#loader {
+    border: 8px solid #f3f3f3;
+    border-top: 8px solid #007bff;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.home .navbar,
+.navbar{
+    background: #205781;
+}
+
+.form-control:focus,
+.form-select:focus,
+.btn:focus,
+.btn-close:focus {
+    border-color: #3C3D37;
+    box-shadow: none !important;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+.modal-content {
+    background-color: #FFF;
+}
+
+.form-control {
+    border-color: #3C3D3775;
+}
+
+.form-floating input,
+.form-floating select {
+    background-color: #FFF;
+    border-color: #3C3D3775;
+}
+
+.container-fluid main,
+.container main {
+    background-color: #FFFFFF;
+    margin-top: 10px;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+}
+
+.dropdown-menu[data-bs-popper]{
+    margin-top: .5rem !important;
+}
+
+.dt-search label {
+    display: none; 
+}
+
+.dt-search input {
+    width: 500px;
+    padding: 10px !important;
+    background-color: white !important;
+}
+
+    .dt-search input:focus {
+        border-color: #00000075 !important;
+    }
+
+.dt-type-numeric, .dt-type-date {
+    text-align: left !important;
+}
+
+
+.dt-length select {
+    margin-right: 5px;
+    padding: 10px;
+    width: 75px !important;
+    background-color: white !important;
+}
+
+.btn-outline-warning:hover {
+    color: white !important;
+}
+
+.toast-container {
+    z-index: 1500 !important;
+}

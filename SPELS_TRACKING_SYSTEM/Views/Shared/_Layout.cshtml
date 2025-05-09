@@ -1,0 +1,107 @@
+﻿@inject IHttpContextAccessor httpContextAccessor
+
+@{
+    var userPermissions = httpContextAccessor.HttpContext.Session.GetString("UserPermissions")?.Split(',') ?? new string[0];
+
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var stages = new[]
+    {
+        new { Name = "Receiving Stage", Controller = "Documents" },
+        new { Name = "Evaluation Stage", Controller = "EvaluationStages" },
+        new { Name = "Proofing Stage", Controller = "ProofingStages" },
+        new { Name = "Posting Stage", Controller = "PostingStages" },
+        new { Name = "Approval Stage", Controller = "ApprovalStages" },
+        new { Name = "OD Stages", Controller = "ODStages" },
+        new { Name = "Releasing Stage", Controller = "ReleasingStages" }
+    };
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] | SPELS</title>
+    <link rel="icon" type="image/png" href="~/img/latest-logo.png" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/datatables.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/SPELS_TRACKING_SYSTEM.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark p-3 sticky-top">
+        <div class="container-fluid" style="display: inline-block;">
+            <div class="row">
+                <div class="col-6">
+                    <a class="navbar-brand d-flex align-items-center gap-2" href="#" style="text-decoration: none;">
+                        <img src="~/img/latest-logo.png" alt="logo" width="65" />
+                        <div class="d-flex align-items-center justify-content-center">
+                            <h3 class="fw-bold text-danger me-2 m-0" style="-webkit-text-stroke: .01px #ffffff70;">SPELS</h3>
+                            <h3 class="fw-bold text-white m-0">Tracking System</h3>
+                        </div>
+                    </a>
+                </div>
+                <div class="col-6 d-flex justify-content-end align-items-center">
+                    <h4 id="dateTime" class="fw-bold text-white"></h4>
+                </div>
+                <div class="col-10">
+                    <!-- Navbar Toggle Button for Small Screens -->
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav gap-2">
+                            @foreach (var stage in stages)
+                            {
+                                if (userPermissions.Contains(stage.Controller))
+                                {
+                                    <li class="nav-item">
+                                        <a class="btn @(currentController == stage.Controller ? "btn-light" : "btn-outline-light")"
+                                           asp-area=""
+                                           asp-controller="@stage.Controller"
+                                           asp-action="Index"
+                                           data-stage="@stage.Controller">@stage.Name</a>
+                                    </li>
+                                }
+                            }
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-2 d-flex justify-content-end align-items-center">
+                    <a type="button" class="btn btn-danger" asp-area="" asp-controller="Account" asp-action="Logout">
+                        Logout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid content-container">
+        <main role="main">
+            @RenderBody()
+        </main>
+    </div>
+    <footer class="border-top footer text-muted">
+        <div class="container-fluid mt-3">
+            © 2025 - SPELS TRACKING SYSTEM - POWERED BY ARJAHN V. MILAR - <a asp-area="" asp-controller="Home" asp-action="AboutUs">About Us</a>
+        </div>
+    </footer>
+    <!--Container Main end-->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery-ui.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            let enabledStages = @Html.Raw(Json.Serialize(userPermissions));
+
+            document.querySelectorAll(".nav-item a").forEach(button => {
+                if (!enabledStages.includes(button.dataset.stage)) {
+                    button.style.display = "none";
+                }
+            });
+        });
+    </script>
+    <script src="~/js/datatables.min.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

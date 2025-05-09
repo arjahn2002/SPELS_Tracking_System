@@ -1,0 +1,77 @@
+﻿@using SPELS_TRACKING_SYSTEM.ViewModels
+@model LoginVM;
+
+@{
+    ViewData["Title"] = "Login";
+    Layout = "_LoginPartial";
+}
+
+<div class="form-container">
+    <div class="image">
+        <a asp-action="Login" asp-controller="Account">
+            <img src="~/img/login-logo.png" alt="logo" width="100" />
+        </a>
+    </div>
+    <form asp-action="Login" method="post" class="form needs-validation" novalidate>
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <div class="input-group">
+            <label for="username">Username</label>
+            <input asp-for="Username" class="form-control" id="username" required />
+            <span asp-validation-for="Username" class="text-danger"></span>
+        </div>
+        <div class="input-group">
+            <label for="password">Password</label>
+            <div class="password-wrapper">
+                <input type="password" asp-for="Password" class="form-control" id="password" required />
+                <i class="fa-solid fa-eye toggle-password" onclick="togglePassword()"></i>
+            </div>
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+        <button type="submit" class="sign">Log in</button>
+    </form>
+</div>
+
+@section Scripts {
+
+    <script>
+        function togglePassword() {
+            const passwordInput = document.getElementById("password");
+            const icon = document.querySelector(".toggle-password");
+
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                icon.classList.remove("fa-eye");
+                icon.classList.add("fa-eye-slash");
+            } else {
+                passwordInput.type = "password";
+                icon.classList.remove("fa-eye-slash");
+                icon.classList.add("fa-eye");
+            }
+        }
+    </script>
+
+    <script>
+        (() => {
+            'use strict'
+
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            const forms = document.querySelectorAll('.needs-validation')
+
+            // Loop over them and prevent submission
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,243 @@
+﻿@model SPELS_TRACKING_SYSTEM.ViewModels.ProvinceVM
+
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Provinces";
+}
+
+<div class="d-flex align-items-center mt-3 mb-3">
+    <h4 class="me-auto">Provinces</h4>
+    <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#AddModal">
+        Add new
+    </button>
+</div>
+
+<table class="table table-striped" id="TableIndex">
+    <thead>
+        <tr>
+            <th>
+                Province id
+            </th>
+            <th>
+                Province name
+            </th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model.Provinces) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.ProvinceID)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.ProvinceName)
+            </td>
+            <td>
+                <a class="btn btn-success btn-sm" onclick="EditForm(@item.ProvinceID)" id="EditForm">Edit</a>
+
+                @if (item.ProvinceID == 1)
+                {
+                    <a class="btn btn-danger btn-sm" hidden>Delete</a>
+                }
+                else
+                {
+                    @:| <a class="btn btn-danger btn-sm" onclick="ConfirmForm(@item.ProvinceID)">Delete</a>
+                }
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+
+<!-- Add Province Name -->
+<form asp-action="Create" method="post" class="needs-validation" novalidate>
+    <div class="modal fade" id="AddModal" tabindex="-1" aria-labelledby="sampleDocsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="sampleDocsModalLabel">ADD NEW PROVINCE</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="form-floating mb-3">
+                        <input type="text" asp-for="Province.ProvinceName" class="form-control" id="AddProvinceName" placeholder="Province name" required />
+                        <label for="AddProvinceName">Province name</label>
+                        <span asp-validation-for="Province.ProvinceName" class="text-danger"></span>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary btn-save d-flex">
+                        <div class="loading-spinner d-none me-2">
+                            <div class="spinner-border spinner-border-sm" role="status"></div>
+                        </div>
+                        Save
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Edit Province Name -->
+<form asp-action="Edit" id="EditFormModal" method="post" class="needs-validation" novalidate>
+    <div class="modal fade" id="EditModal" tabindex="-1" aria-labelledby="sampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="sampleDocsModalLabel">EDIT PROVINCE</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input class="editID" asp-for="Province.ProvinceID" hidden />
+
+                    <div class="form-floating mb-3">
+                        <input type="text" asp-for="Province.ProvinceName" class="form-control" id="EditProvinceName" placeholder="Province name" required />
+                        <label for="EditProvinceName">Province name</label>
+                        <span asp-validation-for="Province.ProvinceName" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-primary btn-save d-flex">
+                        <div class="loading-spinner d-none me-2">
+                            <div class="spinner-border spinner-border-sm" role="status"></div>
+                        </div>
+                        Save changes
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<!-- Delete Province -->
+<form asp-action="Delete" method="post">
+    <div class="modal fade" id="DeleteModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5 text-danger" id="exampleModalLabel">Delete Province</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input id="ProvinceID" name="ProvinceID" hidden />
+                    <h5>Are you sure to delete this province?</h5>
+                </div>
+                <div class="modal-footer">
+                    <button id="btnDelete" type="button" class="btn btn-danger">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let addModal = document.getElementById('AddModal');
+            let editModal = document.getElementById('EditModal');
+            let addProvinceName = document.getElementById('AddProvinceName');
+            let editProvinceName = document.getElementById('EditProvinceName');
+            let form = this.querySelector("form");
+
+            addModal.addEventListener('shown.bs.modal', function () {
+                addProvinceName.focus();
+            });
+
+            editModal.addEventListener('shown.bs.modal', function () {
+                editProvinceName.focus();
+            });
+
+            addModal.addEventListener('hidden.bs.modal', function () {
+                form.reset();
+                form.classList.remove("was-validated");
+
+                let validation = form.querySelectorAll("span.text-danger");
+                validation.forEach(function (text) {
+                    text.textContent = "";
+                });
+            });
+
+            editModal.addEventListener('hidden.bs.modal', function () {
+                form.reset();
+                editProvinceName.classList.remove("is-invalid");
+                form.classList.remove("was-validated");
+
+                let validationMsg = form.querySelector(".text-danger");
+                if (validationMsg) {
+                    validationMsg.textContent = "";
+                }
+            });
+        });
+    </script>
+
+    <script>
+        $(document).ready(function () {
+            $("#btnDelete").click(function () {
+                var idDelete = $("#ProvinceID").val();
+
+                $.ajax({
+                    type: "POST",
+                    url: "/Provinces/Delete",
+                    data: { intDelete: idDelete },
+                    success: function (result) {
+                        if (result) {
+                            $("#ProvinceID").val(null);
+                            window.location.href = "/Provinces/Index";
+                        } else {
+                            alert("Oishi! Something went wrong.");
+                        }
+                    }
+                });
+            });
+        });
+
+        var EditForm = function (id) {
+            $.ajax({
+                type: "GET",
+                url: "/Provinces/GetProvince",
+                data: { getID: id },
+                success: function (province) {
+                    $("#EditModal").modal("show");
+                    $(".editID").val(province.provinceid);
+                    $("#EditProvinceName").val(province.provincename);
+                }
+            });
+        }
+
+        var ConfirmForm = function (id) {
+            $("#ProvinceID").val(id);
+            $("#DeleteModal").modal("show");
+        };
+    </script>
+
+    <script>
+        (() => {
+            'use strict'
+
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            const forms = document.querySelectorAll('.needs-validation')
+
+            // Loop over them and prevent submission
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
