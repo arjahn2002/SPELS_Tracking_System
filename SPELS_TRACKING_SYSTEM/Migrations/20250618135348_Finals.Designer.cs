@@ -12,8 +12,8 @@ using SPELS_TRACKING_SYSTEM.Data;
 namespace SPELS_TRACKING_SYSTEM.Migrations
 {
     [DbContext(typeof(SPELS_TRACKING_SYSTEMContext))]
-    [Migration("20250507020649_InitialCreat")]
-    partial class InitialCreat
+    [Migration("20250618135348_Finals")]
+    partial class Finals
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -328,6 +328,9 @@ namespace SPELS_TRACKING_SYSTEM.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RoleID"));
+
+                    b.Property<bool>("IsAdmin")
+                        .HasColumnType("bit");
 
                     b.Property<string>("RoleName")
                         .IsRequired()

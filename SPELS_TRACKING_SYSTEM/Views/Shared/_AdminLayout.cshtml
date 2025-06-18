@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="~/css/fontawesome/css/all.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/datatables.min.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/sidebar.css" asp-append-version="true" />
-   
+    
 </head>
 <body>
 
@@ -101,23 +101,22 @@
 
     <section class="home">
         <nav class="navbar navbar-expand-lg navbar-light p-3 sticky-top">
-            <div class="container" style="display: inline-block;">
-                <div class="row ms-3">
-                    <div class="col-6 mb-3">
-                        <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand d-flex align-items-center gap-2" style="text-decoration: none;">
-                            @* <img src="~/img/latest-logo.png" alt="logo" width="65" /> *@
+            <div class="container-fluid">
+                <div class="row w-100">
+                    <div class="col-lg-6 col-md-6 col-sm-12 mb-3">
+                        <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand d-flex gap-2 ms-5" style="text-decoration: none;">
                             <div class="d-flex align-items-center justify-content-center">
                                 <h3 class="fw-bold text-danger me-2 m-0" style="-webkit-text-stroke: .01px #ffffff70;">SPELS</h3>
                                 <h3 class="fw-bold text-white m-0">Tracking System</h3>
                             </div>
                         </a>
                     </div>
-                    <div class="col-6 d-flex justify-content-end align-items-center">
+                    <div class="date-time col-lg-6 col-md-6 col-sm-12 d-flex justify-content-end align-items-center">
                         <h4 id="dateTime" class="fw-bold text-white"></h4>
                     </div>
-                    <div class="col-12 d-flex">
+                    <div class="col-12 d-flex flex-wrap">
                         <span class="fw-normal align-content-center me-2 text-white">Stage:</span>
-                        <div class="dropdown w-50">
+                        <div class="dropdown flex-grow-1">
                             @{
                                 string currentController = ViewContext.RouteData.Values["controller"].ToString();
                                 string currentStage = currentController switch
@@ -157,7 +156,7 @@
         </div>
         <footer class="border-top footer text-muted">
             <div class="container-fluid mt-3">
-                © 2025 - SPELS TRACKING SYSTEM - POWERED BY ARJAHN V. MILAR - <a asp-area="" asp-controller="Home" asp-action="AboutUs">About Us</a>
+                © 2025 - SPELS TRACKING SYSTEM - DEVELOPED BY ARJAHN V. MILAR - <a asp-area="" asp-controller="Home" asp-action="AboutUs">About Me!</a>
             </div>
         </footer>
     </section>
@@ -169,6 +168,8 @@
     <script src="~/js/datatables.min.js" asp-append-version="true"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/fontawesome/js/all.js" asp-append-version="true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/6.0.0/signalr.min.js"></script>
+    <script src="~/js/signalr/spelsHubClient.js" asp-append-version="true"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js" asp-append-version="true"></script>
     
     @await RenderSectionAsync("Scripts", required: false)

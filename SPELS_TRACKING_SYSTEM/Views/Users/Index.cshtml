@@ -1,12 +1,22 @@
 ﻿@model SPELS_TRACKING_SYSTEM.ViewModels.UserVM
+@inject IHttpContextAccessor httpContextAccessor
 
 @{
-    Layout = "_AdminLayout";
-    ViewData["Title"] = "User Management";
+    var admin = httpContextAccessor.HttpContext.Session.GetInt32("IsAdmin");
+    if (admin == 1)
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "User Accounts Page";
+    }
+    else
+    {
+        Layout = "_Layout";
+        ViewData["Title"] = "User Accounts Page";
+    }
 }
 
 <div class="d-flex align-items-center mt-3 mb-3">
-    <h4 class="me-auto">User Management </h4>
+    <h4 class="me-auto">User Acccounts </h4>
     <!-- Button trigger modal -->
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#AddUserModal">
         Add new

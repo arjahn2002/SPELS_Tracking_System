@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SPELS_TRACKING_SYSTEM.Data;
 using SPELS_TRACKING_SYSTEM.Models;
+using SPELS_TRACKING_SYSTEM.ViewModels;
 using System.Diagnostics;
 
 namespace SPELS_TRACKING_SYSTEM.Controllers
@@ -17,27 +18,28 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
 
         public async Task<IActionResult> Index()
         {
-                var history = _context.DocumentHistory
-                .Include(h => h.Document)
-                .OrderByDescending(h => h.Timestamp)
-                .ToList();
+            var history = _context.DocumentHistory
+            .Include(h => h.Document)
+            .OrderByDescending(h => h.Timestamp)
+            .ToList();
 
             string username = HttpContext.Session.GetString("Username");
-            string superAdmin = HttpContext.Session.GetString("SuperAdmin");
-            if (superAdmin == "superadmin")
-            {
-                
-            }
-            else
-            {
-                var user = await _context.User.FirstOrDefaultAsync(u => u.Username == username);
 
-                if (user == null)
-                {
-                    return RedirectToAction("Login", "Account");
-                }
+            var userLogin = await _context.User
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Username == username);
+
+            if (userLogin == null || !userLogin.Role.IsAdmin)
+            {
+                HttpContext.Session.Clear();
+                return RedirectToAction("Login", "Account");
             }
-            return View(history);
+            var vm = new HomeVM
+            {
+                DocumentHistories = history
+            };
+
+            return View(vm);
         }
 
         public IActionResult AboutUs()

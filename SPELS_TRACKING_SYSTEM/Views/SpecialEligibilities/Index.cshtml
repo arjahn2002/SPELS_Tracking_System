@@ -1,8 +1,19 @@
 ﻿@model SPELS_TRACKING_SYSTEM.ViewModels.SpecialEligibilityVM
+@inject IHttpContextAccessor httpContextAccessor
 
 @{
-    Layout = "_AdminLayout";
-    ViewData["Title"] = "Special Eligibilities";
+    var superAdmin = httpContextAccessor.HttpContext.Session.GetString("SuperAdmin");
+    var admin = httpContextAccessor.HttpContext.Session.GetInt32("IsAdmin");
+    if (superAdmin != null || admin == 1)
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "Eligibilities Page";
+    }
+    else
+    {
+        Layout = "_Layout";
+        ViewData["Title"] = "Eligibilities Page";
+    }
 }
 
 <div class="d-flex align-items-center mt-3 mb-3">

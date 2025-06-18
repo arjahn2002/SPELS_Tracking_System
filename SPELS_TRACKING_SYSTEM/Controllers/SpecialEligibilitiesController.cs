@@ -32,6 +32,18 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
                 return NotFound();
             }
 
+            string username = HttpContext.Session.GetString("Username");
+
+            var user = await _context.User
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Username == username);
+
+            if (user == null || !user.Role.IsAdmin)
+            {
+                HttpContext.Session.Clear();
+                return RedirectToAction("Login", "Account");
+            }
+
             var SEVM = new SpecialEligibilityVM
             {
                 SpecialEligibilities = listSE,

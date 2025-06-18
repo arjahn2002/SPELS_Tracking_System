@@ -1,8 +1,18 @@
 ﻿@model SPELS_TRACKING_SYSTEM.ViewModels.OtherFOsVM
+@inject IHttpContextAccessor httpContextAccessor
 
 @{
-    Layout = "_AdminLayout";
-    ViewData["Title"] = "Other FO's";
+    var admin = httpContextAccessor.HttpContext.Session.GetInt32("IsAdmin");
+    if (admin == 1)
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "Other Fo's Page";
+    }
+    else
+    {
+        Layout = "_Layout";
+        ViewData["Title"] = "Other Fo's Page";
+    }
 }
 
 <div class="d-flex align-items-center mt-3 mb-3">

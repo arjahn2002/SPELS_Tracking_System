@@ -31,18 +31,14 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
             {
                 return View(model);
             }
-            if (model.Username == "admin" && model.Password == "admin123")
-            {
-                HttpContext.Session.SetString("Username", "admin");
-                HttpContext.Session.SetString("SuperAdmin", "superadmin");
-                return RedirectToAction("Index", "Home");
-            }
             
             var user = await _context.User
+                .Include(u => u.Role)
                 .FirstOrDefaultAsync(u => u.Username == model.Username && u.Password == model.Password);
 
             if (user != null)
             {
+                HttpContext.Session.SetInt32("IsAdmin", user.Role.IsAdmin ? 1 : 0);
                 HttpContext.Session.SetString("Username", user.Username);
                 HttpContext.Session.SetString("Fullname", user.Fullname);
 
@@ -50,6 +46,11 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
                     .Where(rp => rp.RoleID == user.RoleID && rp.CanAccess)
                     .Select(rp => rp.StageName)
                     .ToListAsync();
+
+                if (user.Role.IsAdmin == true)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
 
                 if (rolePermissions.Any())
                 {

@@ -2,8 +2,8 @@
 @inject IHttpContextAccessor httpContextAccessor
 
 @{
-    var superAdmin = httpContextAccessor.HttpContext.Session.GetString("SuperAdmin");
-    if (superAdmin != null)
+    var admin = httpContextAccessor.HttpContext.Session.GetInt32("IsAdmin");
+    if (admin == 1)
     {
         Layout = "_AdminLayout";
         ViewData["Title"] = "Evaluation Stage";
@@ -34,15 +34,7 @@
             <th>
                 Date acted
             </th>
-            @if (ViewBag.CanForward != null && (bool)ViewBag.CanForward)
-            {
-                <th></th>
-            }
-            else
-            {
-                <th hidden></th>
-            }
-
+            <th></th>
         </tr>
     </thead>
     <tbody>
@@ -86,18 +78,9 @@
             <td>
                 @Html.DisplayFor(modelItem => item.DateActed)
             </td>
-                @if (ViewBag.CanForward != null && (bool)ViewBag.CanForward)
-                {
-                <td>
-                    <a class="btn btn-primary btn-sm" onclick="NextStageForm(@item.EvaluationID)">Evaluate</a>
-                </td>
-                }
-                else
-                {
-                    <td >
-                        <a class="btn btn-primary btn-sm" hidden>Evaluate</a>
-                    </td>
-                }
+            <td>
+                <a class="btn btn-primary btn-sm" onclick="NextStageForm(@item.EvaluationID)" @(ViewBag.CanForward != true ? "hidden" : "")>Evaluate</a>
+            </td>
         </tr>
 }
     </tbody>

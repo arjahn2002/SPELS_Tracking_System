@@ -1,12 +1,22 @@
 ﻿@model SPELS_TRACKING_SYSTEM.ViewModels.RoleVM
+@inject IHttpContextAccessor httpContextAccessor
 
 @{
-    Layout = "_AdminLayout";
-    ViewData["Title"] = "Roles";
+    var admin = httpContextAccessor.HttpContext.Session.GetInt32("IsAdmin");
+    if (admin == 1)
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "User Roles Page";
+    }
+    else
+    {
+        Layout = "_Layout";
+        ViewData["Title"] = "User Roles Page";
+    }
 }
 
 <div class="d-flex align-items-center mt-3 mb-3">
-    <h4 class="me-auto">Roles </h4>
+    <h4 class="me-auto">User Roles </h4>
     <!-- Button trigger modal -->
     <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#AddModal">
         Add new
@@ -63,6 +73,11 @@
                         <span asp-validation-for="Role.RoleName" class="text-danger"></span>
                     </div>
 
+                    <div class="form-check mb-3">
+                        <input type="checkbox" asp-for="Role.IsAdmin" class="form-check-input" id="AddIsAdmin" />
+                        <label class="form-check-label" for="AddIsAdmin">Is Admin?</label>
+                    </div>
+
                 </div>
                 <div class="modal-footer">
                     <button id="btnSave" type="submit" class="btn btn-primary btn-save d-flex">
@@ -93,6 +108,11 @@
                         <input asp-for="Role.RoleName" class="form-control" id="EditRoleName" required />
                         <label><span class="text-danger fw-bold">*</span> Role name</label>
                         <span asp-validation-for="Role.RoleName" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-check mb-3">
+                        <input type="checkbox" asp-for="Role.IsAdmin" class="form-check-input" id="EditIsAdmin" />
+                        <label class="form-check-label" for="EditIsAdmin">Is Admin?</label>
                     </div>
 
                     <table class="table">
@@ -224,6 +244,7 @@
                     $("#EditModal").modal("show");
                     $(".editID").val(role.roleid);
                     $("#EditRoleName").val(role.rolename);
+                    $("#EditIsAdmin").prop("checked", role.isadmin);
 
                     // Clear existing rows in the table
                     let tbody = $("#EditModal tbody");

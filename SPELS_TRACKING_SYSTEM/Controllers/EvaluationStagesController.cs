@@ -16,6 +16,8 @@ using SPELS_TRACKING_SYSTEM.Models;
 using SPELS_TRACKING_SYSTEM.Services;
 using SPELS_TRACKING_SYSTEM.ViewModels;
 using SPELS_TRACKING_SYSTEM.Helper;
+using Microsoft.AspNetCore.SignalR;
+using SPELS_TRACKING_SYSTEM.Hubs;
 
 namespace SPELS_TRACKING_SYSTEM.Controllers
 {
@@ -24,11 +26,13 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
     {
         private readonly SPELS_TRACKING_SYSTEMContext _context;
         private readonly PermissionService _permissionService;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public EvaluationStagesController(SPELS_TRACKING_SYSTEMContext context, PermissionService permissionService)
+        public EvaluationStagesController(SPELS_TRACKING_SYSTEMContext context, PermissionService permissionService, IHubContext<NotificationHub> hubContext)
         {
             _context = context;
             _permissionService = permissionService;
+            _hubContext = hubContext;
         }
 
         // GET: EvaluationStages
@@ -69,33 +73,29 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
                 return NotFound();
             }
 
-            string username = HttpContext.Session.GetString("Username"); 
-            string superAdmin = HttpContext.Session.GetString("SuperAdmin");
+            string username = HttpContext.Session.GetString("Username");
+            var admin = HttpContext.Session.GetInt32("IsAdmin");
 
-            if (superAdmin == "superadmin")
+            var user = await _context.User.FirstOrDefaultAsync(u => u.Username == username);
+
+            if (user == null)
             {
-                ViewBag.CanForward = true;  // SuperAdmin can export documents
+                return RedirectToAction("Login", "Account");
             }
-            else
+
+            // Fetch enabled stages from RolePermissions table
+            var enabledStages = await _context.RolePermission
+                .Where(rp => rp.CanAccess)
+                .Select(rp => rp.StageName)
+                .ToListAsync();
+
+            ViewBag.EnabledStages = enabledStages; // Pass it to the view
+
+            var evaluationPermission = await _context.RolePermission
+                    .FirstOrDefaultAsync(rp => rp.RoleID == user.RoleID && rp.StageName == "EvaluationStages");
+
+            if (admin != 1)
             {
-                var user = await _context.User.FirstOrDefaultAsync(u => u.Username == username);
-
-                if (user == null)
-                {
-                    return RedirectToAction("Login", "Account");
-                }
-
-                // Fetch enabled stages from RolePermissions table
-                var enabledStages = await _context.RolePermission
-                    .Where(rp => rp.CanAccess)
-                    .Select(rp => rp.StageName)
-                    .ToListAsync();
-
-                ViewBag.EnabledStages = enabledStages; // Pass it to the view
-
-                var evaluationPermission = await _context.RolePermission
-                        .FirstOrDefaultAsync(rp => rp.RoleID == user.RoleID && rp.StageName == "EvaluationStages");
-
                 if (evaluationPermission == null || !evaluationPermission.CanAccess)
                 {
                     // Block access if no permission
@@ -103,6 +103,10 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
                 }
 
                 ViewBag.CanForward = evaluationPermission?.CanForward ?? false;
+            }
+            else
+            {
+                ViewBag.CanForward = true;
             }
 
             var evaluationVM = new EvaluationVM
@@ -148,6 +152,7 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> NextStage(EvaluationVM evaluationVM)
         {
             var docs = await _context.Document.FindAsync(evaluationVM.Evaluation.DocumentID);
@@ -200,6 +205,14 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
                                 await _context.SaveChangesAsync();
                             }
                         }
+                        try
+                        {
+                            await _hubContext.Clients.All.SendAsync("ReceiveMessage", "A new document was forwarded.");
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log exception
+                        }
                         return RedirectToAction(nameof(Index));
 
                     default:
@@ -211,6 +224,7 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> RejectDocs(EvaluationVM evaluationVM)
         {
             var docs = await _context.Document.FindAsync(evaluationVM.Evaluation.DocumentID);
@@ -249,36 +263,18 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
                         await _context.SaveChangesAsync();
                     }
                 }
+
+                try
+                {
+                    await _hubContext.Clients.All.SendAsync("ReceiveMessage", "A new document was forwarded.");
+                }
+                catch (Exception ex)
+                {
+                    // Log exception
+                }
                 return RedirectToAction(nameof(Index));
             };
             return RedirectToAction(nameof(Index));
-        }
-
-        [HttpPost]
-        public IActionResult Edit(DocumentVM docsVM)
-        {
-            var docs = _context.Document.Find(docsVM.Document.DocumentID);
-            if (docs == null)
-            {
-                return NotFound();
-            }
-
-            docs.SubmissionType = docsVM.Document.SubmissionType;
-            docs.OtherFOsID = docsVM.Document.OtherFOsID;
-            docs.Lastname = docsVM.Document.Lastname;
-            docs.Firstname = docsVM.Document.Firstname;
-            docs.Middlename = docsVM.Document.Middlename;
-            docs.DateofBirth = docsVM.Document.DateofBirth;
-            docs.PlaceofBirth = docsVM.Document.PlaceofBirth;
-            docs.SpecialEligibilityID = docsVM.Document.SpecialEligibilityID;
-            docs.School = docsVM.Document.School;
-            docs.Remarks = docsVM.Document.Remarks;
-            docs.StatusType = docsVM.Document.StatusType;
-            docs.DateReceived = docsVM.Document.DateReceived;
-
-            _context.Document.Update(docs);
-            _context.SaveChanges();
-            return RedirectToAction("Index");
         }
 
         private string GetEnumDisplayName(SubmissionType submissionType)
