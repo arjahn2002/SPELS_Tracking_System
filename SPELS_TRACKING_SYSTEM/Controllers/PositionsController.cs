@@ -33,20 +33,15 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
             }
 
             string username = HttpContext.Session.GetString("Username");
-            string superAdmin = HttpContext.Session.GetString("SuperAdmin");
+            
+            var user = await _context.User
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Username == username);
 
-            if (superAdmin == "superadmin")
+            if (user == null || !user.Role.IsAdmin)
             {
-
-            }
-            else
-            {
-                var userLogin = await _context.User.FirstOrDefaultAsync(u => u.Username == username);
-
-                if (userLogin == null)
-                {
-                    return RedirectToAction("Login", "Account");
-                }
+                HttpContext.Session.Clear();
+                return RedirectToAction("Login", "Account");
             }
 
             var positionVM = new PositionVM

@@ -15,6 +15,8 @@ using SPELS_TRACKING_SYSTEM.Models;
 using SPELS_TRACKING_SYSTEM.Services;
 using SPELS_TRACKING_SYSTEM.ViewModels;
 using SPELS_TRACKING_SYSTEM.Helper;
+using Microsoft.AspNetCore.SignalR;
+using SPELS_TRACKING_SYSTEM.Hubs;
 
 namespace SPELS_TRACKING_SYSTEM.Controllers
 {
@@ -22,11 +24,13 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
     {
         private readonly SPELS_TRACKING_SYSTEMContext _context;
         private readonly PermissionService _permissionService;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public DocumentsController(SPELS_TRACKING_SYSTEMContext context, PermissionService permissionService)
+        public DocumentsController(SPELS_TRACKING_SYSTEMContext context, PermissionService permissionService, IHubContext<NotificationHub> hubContext)
         {
             _context = context;
             _permissionService = permissionService;
+            _hubContext = hubContext;
         }
 
         // GET: Documents
@@ -78,37 +82,31 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
 
             // Get the logged-in user from session
             string username = HttpContext.Session.GetString("Username");
-            string superAdmin = HttpContext.Session.GetString("SuperAdmin");
+            var admin = HttpContext.Session.GetInt32("IsAdmin");
 
-            if (superAdmin == "superadmin")
+            var user = await _context.User
+                .Include(u => u.Role)
+                .FirstOrDefaultAsync(u => u.Username == username);
+
+            if (user == null)
             {
-                ViewBag.CanRemove = true;  // SuperAdmin can remove documents
-                ViewBag.CanEdit = true;  // SuperAdmin can edit documents
-                ViewBag.CanAdd = true;  // SuperAdmin can add documents
-                ViewBag.CanExport = true;  // SuperAdmin can export documents
+                return RedirectToAction("Login", "Account");
             }
-            else
+
+            var enabledStages = await _context.RolePermission
+                .Where(rp => rp.RoleID == user.RoleID && rp.CanAccess)
+                .Select(rp => rp.StageName)
+                .ToListAsync();
+
+            ViewBag.EnabledStages = enabledStages;
+
+            var documentsPermission = await _context.RolePermission
+                .FirstOrDefaultAsync(rp => rp.RoleID == user.RoleID && rp.StageName == "Documents");
+
+            if (admin != 1)
             {
-                var user = await _context.User.FirstOrDefaultAsync(u => u.Username == username);
-
-                if (user == null)
-                {
-                    return RedirectToAction("Login", "Account");
-                }
-
-                var enabledStages = await _context.RolePermission
-                    .Where(rp => rp.RoleID == user.RoleID && rp.CanAccess)
-                    .Select(rp => rp.StageName)
-                    .ToListAsync();
-
-                ViewBag.EnabledStages = enabledStages;
-
-                var documentsPermission = await _context.RolePermission
-                    .FirstOrDefaultAsync(rp => rp.RoleID == user.RoleID && rp.StageName == "Documents");
-
                 if (documentsPermission == null || !documentsPermission.CanAccess)
                 {
-                    // Block access if no permission
                     return RedirectToAction("Login", "Account");
                 }
 
@@ -117,9 +115,16 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
                 ViewBag.CanEdit = documentsPermission?.CanEdit ?? false;
                 ViewBag.CanRemove = documentsPermission?.CanRemove ?? false;
             }
+            else
+            {
+                ViewBag.CanRemove = true;
+                ViewBag.CanEdit = true;
+                ViewBag.CanAdd = true; 
+                ViewBag.CanExport = true;
+            }
 
             var docsVM = new DocumentVM
-            {
+            {   
                 Documents = listDocs,
                 Document = document
             };
@@ -228,6 +233,16 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
                     await _context.SaveChangesAsync();
                 }
             }
+
+            try
+            {
+                await _hubContext.Clients.All.SendAsync("ReceiveMessage", "A new document was created.");
+            }
+            catch (Exception ex)
+            {
+                // Log exception
+            }
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -265,9 +280,10 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
         }
 
         [HttpPost]
-        public IActionResult Edit(DocumentVM vm)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(DocumentVM vm)
         {
-            var docs = _context.Document.Find(vm.Document.DocumentID);
+            var docs = await _context.Document.FindAsync(vm.Document.DocumentID);
             if (docs == null)
             {
                 return NotFound();
@@ -293,7 +309,7 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
             docs.StatusType = vm.Document.StatusType;
 
             _context.Document.Update(docs);
-            _context.SaveChanges();
+            await _context.SaveChangesAsync();
 
             var history = new DocumentHistory
             {
@@ -303,35 +319,54 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
                 Timestamp = DateTime.Now
             };
             _context.DocumentHistory.Add(history);
-            _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
             // Cleanup: Keep only the latest 100 entries
             var totalHistory = _context.DocumentHistory.Count();
             if (totalHistory > 100)
             {
-                var oldestHistory = _context.DocumentHistory
+                var oldestHistory = await _context.DocumentHistory
                     .OrderBy(h => h.Timestamp)  // Order by the oldest Timestamp
-                    .FirstOrDefault();          // Get the oldest record
+                    .FirstOrDefaultAsync();          // Get the oldest record
 
                 if (oldestHistory != null)
                 {
                     _context.DocumentHistory.Remove(oldestHistory);  // Remove the oldest entry
-                    _context.SaveChangesAsync();
+                    await _context.SaveChangesAsync();
                 }
             }
+
+            try
+            {
+                await _hubContext.Clients.All.SendAsync("ReceiveMessage", "A document was edited.");
+            }
+            catch (Exception ex)
+            {
+                // Log exception
+            }
+
             return RedirectToAction("Index");
         }
 
         [HttpPost]
-        public JsonResult Delete(int intDelete)
+        public async Task<JsonResult> Delete(int intDelete)
         {
             bool result = false;
-            var docs = _context.Document.Find(intDelete);
+            var docs = await _context.Document.FindAsync(intDelete);
             if (docs != null)
             {
                 result = true;
                 _context.Document.Remove(docs);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
+
+                try
+                {
+                    await _hubContext.Clients.All.SendAsync("ReceiveMessage", "A new document was deleted.");
+                }
+                catch (Exception ex)
+                {
+                    // Log exception
+                }
             }
             return Json(result);
         }

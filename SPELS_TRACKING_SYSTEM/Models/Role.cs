@@ -9,6 +9,8 @@ namespace SPELS_TRACKING_SYSTEM.Models
 
         public string RoleName { get; set; }
 
+        public bool IsAdmin { get; set; }
+
         public virtual ICollection<RolePermission> RolePermissions { get; set; }
     }
 }

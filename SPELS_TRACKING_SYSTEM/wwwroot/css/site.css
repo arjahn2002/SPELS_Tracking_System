@@ -21,7 +21,7 @@ html {
 }
 
 body {
-    background-color: #FAF9F6;
+    background-color: #FAF9F6 !important;
 }
 
 #loader-wrapper {
@@ -133,4 +133,60 @@ html {
 
 .toast-container {
     z-index: 1500 !important;
+}
+
+@media (max-width: 576px) {
+    .title-header{
+        width: 300px !important;
+        justify-content: left !important;
+    }
+
+    .date-time-client{
+       width: 100% !important;
+       justify-content: left !important;
+       margin-top: 10px;
+    }
+
+    .collapsed-button {
+        margin-top: 20px !important;
+    }
+
+    .col {
+        flex: auto !important;
+    }
+
+    .navbar-brand h3 {
+        font-size: 1.2rem;
+    }
+
+    #dateTime {
+        font-size: 1rem;
+    }
+
+    .date-time {
+        justify-content: center !important;
+    }
+
+    .dt-length {
+        text-align: left !important;
+    }
+    
+    .dt-search {
+        text-align: left !important;
+    }
+
+    .dt-search input {
+        width: 340px;
+        margin-left: 0 !important;
+    }
+
+    .text-title {
+        margin-right: 50px !important;
+    }
+
+    .group-mobile-btn {
+        justify-content: left !important;
+        margin: 0 !important;
+        flex-wrap: nowrap !important;
+    }
 }

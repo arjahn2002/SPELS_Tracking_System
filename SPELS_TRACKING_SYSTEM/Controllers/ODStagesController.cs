@@ -11,16 +11,23 @@ using SPELS_TRACKING_SYSTEM.Data;
 using SPELS_TRACKING_SYSTEM.Models;
 using SPELS_TRACKING_SYSTEM.ViewModels;
 using SPELS_TRACKING_SYSTEM.Helper;
+using Microsoft.AspNetCore.SignalR;
+using SPELS_TRACKING_SYSTEM.Hubs;
+using SPELS_TRACKING_SYSTEM.Services;
 
 namespace SPELS_TRACKING_SYSTEM.Controllers
 {
     public class ODStagesController : Controller
     {
         private readonly SPELS_TRACKING_SYSTEMContext _context;
+        private readonly PermissionService _permissionService;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
-        public ODStagesController(SPELS_TRACKING_SYSTEMContext context)
+        public ODStagesController(SPELS_TRACKING_SYSTEMContext context, PermissionService permissionService, IHubContext<NotificationHub> hubContext)
         {
             _context = context;
+            _permissionService = permissionService;
+            _hubContext = hubContext;
         }
 
         // GET: ODStages
@@ -63,32 +70,28 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
             }
 
             string username = HttpContext.Session.GetString("Username");
-            string superAdmin = HttpContext.Session.GetString("SuperAdmin");
+            var admin = HttpContext.Session.GetInt32("IsAdmin");
 
-            if (superAdmin == "superadmin")
+            var user = await _context.User.FirstOrDefaultAsync(u => u.Username == username);
+
+            if (user == null)
             {
-                ViewBag.CanForward = true;  // SuperAdmin can export documents
+                return RedirectToAction("Login", "Account");
             }
-            else
+
+            // Fetch enabled stages from RolePermissions table
+            var enabledStages = await _context.RolePermission
+                .Where(rp => rp.CanAccess)
+                .Select(rp => rp.StageName)
+                .ToListAsync();
+
+            ViewBag.EnabledStages = enabledStages; // Pass it to the view
+
+            var ODPermission = await _context.RolePermission
+                    .FirstOrDefaultAsync(rp => rp.RoleID == user.RoleID && rp.StageName == "ODStages");
+
+            if (admin != 1)
             {
-                var user = await _context.User.FirstOrDefaultAsync(u => u.Username == username);
-
-                if (user == null)
-                {
-                    return RedirectToAction("Login", "Account");
-                }
-
-                // Fetch enabled stages from RolePermissions table
-                var enabledStages = await _context.RolePermission
-                    .Where(rp => rp.CanAccess)
-                    .Select(rp => rp.StageName)
-                    .ToListAsync();
-
-                ViewBag.EnabledStages = enabledStages; // Pass it to the view
-
-                var ODPermission = await _context.RolePermission
-                        .FirstOrDefaultAsync(rp => rp.RoleID == user.RoleID && rp.StageName == "ODStages");
-
                 if (ODPermission == null || !ODPermission.CanAccess)
                 {
                     // Block access if no permission
@@ -96,6 +99,10 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
                 }
 
                 ViewBag.CanForward = ODPermission?.CanForward ?? false;
+            }
+            else
+            {
+                ViewBag.CanForward = true;
             }
 
             var ODVM = new ODVM
@@ -142,6 +149,7 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> NextStage(ODVM odVM)
         {
             var docs = await _context.Document.FindAsync(odVM.OD.DocumentID);
@@ -194,6 +202,15 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
                                 await _context.SaveChangesAsync();
                             }
                         }
+
+                        try
+                        {
+                            await _hubContext.Clients.All.SendAsync("ReceiveMessage", "A new document was forwarded.");
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log exception
+                        }
                         return RedirectToAction(nameof(Index));
 
                     default:
@@ -205,6 +222,7 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> RejectDocs(ODVM odVM)
         {
             var docs = await _context.Document.FindAsync(odVM.OD.DocumentID);
@@ -242,6 +260,15 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
                         _context.DocumentHistory.Remove(oldestHistory);  // Remove the oldest entry
                         await _context.SaveChangesAsync();
                     }
+                }
+
+                try
+                {
+                    await _hubContext.Clients.All.SendAsync("ReceiveMessage", "A new document was disapproved.");
+                }
+                catch (Exception ex)
+                {
+                    // Log exception
                 }
                 return RedirectToAction(nameof(Index));
             };
@@ -299,6 +326,15 @@ namespace SPELS_TRACKING_SYSTEM.Controllers
                                 _context.DocumentHistory.Remove(oldestHistory);  // Remove the oldest entry
                                 await _context.SaveChangesAsync();
                             }
+                        }
+
+                        try
+                        {
+                            await _hubContext.Clients.All.SendAsync("ReceiveMessage", "A new document was forwarded.");
+                        }
+                        catch (Exception ex)
+                        {
+                            // Log exception
                         }
                         return RedirectToAction(nameof(Index));
 

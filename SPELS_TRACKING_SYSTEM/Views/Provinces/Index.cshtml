@@ -1,8 +1,18 @@
 ﻿@model SPELS_TRACKING_SYSTEM.ViewModels.ProvinceVM
+@inject IHttpContextAccessor httpContextAccessor
 
 @{
-    Layout = "_AdminLayout";
-    ViewData["Title"] = "Provinces";
+    var admin = httpContextAccessor.HttpContext.Session.GetInt32("IsAdmin");
+    if (admin == 1)
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "Provinces Page";
+    }
+    else
+    {
+        Layout = "_Layout";
+        ViewData["Title"] = "Provinces Page";
+    }
 }
 
 <div class="d-flex align-items-center mt-3 mb-3">

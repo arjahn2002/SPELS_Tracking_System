@@ -2,8 +2,8 @@
 @inject IHttpContextAccessor httpContextAccessor
 
 @{
-    var superAdmin = httpContextAccessor.HttpContext.Session.GetString("SuperAdmin");
-    if (superAdmin != null)
+    var admin = httpContextAccessor.HttpContext.Session.GetInt32("IsAdmin");
+    if (admin == 1)
     {
         Layout = "_AdminLayout";
         ViewData["Title"] = "Receiving Stage";
@@ -15,140 +15,113 @@
     }
 }
 
-<div class="d-flex align-items-center mt-3 mb-3">
-    <h4 class="me-auto">Receiving Stage</h4>
+<div class="d-flex align-items-center mt-3 mb-3 flex-wrap">
+    <h4 class="text-title me-auto mb-2">Receiving Stage</h4>
     <!-- Button trigger modal -->
-    @if (ViewBag.CanExport != null && (bool)ViewBag.CanExport)
-    {
-        <button type="button" class="btn btn-warning text-white open-export-modal" data-bs-toggle="modal" data-bs-target="#ExportExcelModal">
-            Export excel
+    <div class="group-mobile-btn">
+        <button class="btn btn-warning text-white open-export-modal mb-2" data-bs-toggle="modal" data-bs-target="#ExportExcelModal" @(ViewBag.CanExport != true ? "hidden" : "")>
+            Export Excel
         </button>
-    }
-    else
-    {
-        <button type="button" class="btn btn-warning text-white" hidden>
-            Export excel
-        </button>
-    }
 
-    @if (ViewBag.CanAdd != null && (bool)ViewBag.CanAdd)
-    {
-        <button type="button" class="btn btn-primary ms-2 open-create-modal" data-bs-toggle="modal" data-bs-target="#CreateDocsModal">
+        <button type="button" class="btn btn-primary ms-2 mb-2 open-create-modal" data-bs-toggle="modal" data-bs-target="#CreateDocsModal" @(ViewBag.CanAdd != true ? "hidden" : "")>
             Add new
         </button>
-    }
-    else
-    {
-        <button type="button" class="btn btn-primary" hidden>
-            Add new
-        </button>
-    }
+    </div>
 </div>
 
-<table class="table table-striped" id="TableIndex">
-    <thead>
-        <tr>
-            <th>
-                Full name
-            </th>
-            <th>
-                Special eligibility
-            </th>
-            <th>
-                Status
-            </th>
-            <th>
-                Remarks
-            </th>
-            <th>
-                Date received
-            </th>
-            <th>
-                Date approved
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model.Documents)
-        {
+<div class="table-responsive">
+    <table class="table table-striped table-hover" id="TableIndex">
+        <thead>
             <tr>
-                <td>
-                    @{
-                        var hasValidMiddleName = !(item.Middlename == "N/A" || item.Middlename == "N.A" || item.Middlename == "NA" || item.Middlename == "n/a" || item.Middlename == "na");
-                        var hasValidSuffix = !(item.Suffix == "N/A" || item.Suffix == "N.A" || item.Suffix == "NA" || item.Suffix == "n/a" || item.Suffix == "na");
-
-                        var fullName = item.Firstname;
-
-                        if (hasValidMiddleName)
-                        {
-                            fullName += $" {item.Middlename}";
-                        }
-
-                        fullName += $" {item.Lastname}";
-
-                        if (hasValidSuffix)
-                        {
-                            fullName += $" {item.Suffix}";
-                        }
-                    }
-
-                    @fullName
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.SpecialEligibility.SpecialEligibilityName)
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.StatusTypeName)
-                </td>
-                <td>
-                    @if (item.Remarks == "N/A")
-                    {
-                        
-                    }
-                    else
-                    {
-                        @Html.DisplayFor(modelItem => item.Remarks)
-                    }
-                </td>
-                <td>
-                    @Html.DisplayFor(modelItem => item.DateReceived)
-                </td>
-                <td>
-                    @{
-                        var latestReleasing = item.ReleasingStages?.OrderByDescending(r => r.DateApproved).FirstOrDefault();
-                        if (latestReleasing != null)
-                        {
-                            @latestReleasing.DateApproved.ToString("M/d/yyyy")
-                        }
-                    }
-                </td>
-                <td>
-                    <div class="d-flex gap-1">
-                        @if (ViewBag.CanEdit != null && (bool)ViewBag.CanEdit)
-                        {
-                            <a class="btn btn-success btn-sm open-edit-modal" onclick="EditForm(@item.DocumentID)">Edit</a> @: |
-                        }
-                        else
-                        {
-                            <a class="btn btn-danger btn-sm" hidden>Edit</a>
-                        }
-
-                        <a class="btn btn-info text-white btn-sm" onclick="DetailsForm(@item.DocumentID)">Details</a> 
-                        @if (ViewBag.CanRemove != null && (bool)ViewBag.CanRemove)
-                        {
-                            @: | <a class="btn btn-danger btn-sm" onclick="ConfirmForm(@item.DocumentID, '@item.Lastname', '@item.Firstname', '@item.Middlename')">Delete</a>
-                        }
-                        else
-                        {
-                            <a class="btn btn-danger btn-sm"hidden>Delete</a>
-                        }
-                    </div>
-                </td>
+                <th>
+                    Full name
+                </th>
+                <th>
+                    Special eligibility
+                </th>
+                <th>
+                    Status
+                </th>
+                <th>
+                    Remarks
+                </th>
+                <th>
+                    Date received
+                </th>
+                <th>
+                    Date approved
+                </th>
+                <th>Actions</th>
             </tr>
-    }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Documents)
+            {
+                <tr>
+                    <td>
+                        @{
+                            var hasValidMiddleName = !(item.Middlename == "N/A" || item.Middlename == "N.A" || item.Middlename == "NA" || item.Middlename == "n/a" || item.Middlename == "na");
+                            var hasValidSuffix = !(item.Suffix == "N/A" || item.Suffix == "N.A" || item.Suffix == "NA" || item.Suffix == "n/a" || item.Suffix == "na");
+
+                            var fullName = item.Firstname;
+
+                            if (hasValidMiddleName)
+                            {
+                                fullName += $" {item.Middlename}";
+                            }
+
+                            fullName += $" {item.Lastname}";
+
+                            if (hasValidSuffix)
+                            {
+                                fullName += $" {item.Suffix}";
+                            }
+                        }
+
+                        @fullName
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.SpecialEligibility.SpecialEligibilityName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.StatusTypeName)
+                    </td>
+                    <td>
+                        @if (item.Remarks == "N/A")
+                        {
+                            
+                        }
+                        else
+                        {
+                            @Html.DisplayFor(modelItem => item.Remarks)
+                        }
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.DateReceived)
+                    </td>
+                    <td>
+                        @{
+                            var latestReleasing = item.ReleasingStages?.OrderByDescending(r => r.DateApproved).FirstOrDefault();
+                            if (latestReleasing != null)
+                            {
+                                @latestReleasing.DateApproved.ToString("M/d/yyyy")
+                            }
+                        }
+                    </td>
+                    <td>
+                        <div class="d-flex gap-1 flex-wrap">
+                            <a class="btn btn-success btn-sm open-edit-modal" onclick="EditForm(@item.DocumentID)" @(ViewBag.CanEdit != true ? "hidden" : "")>Edit</a>
+                            
+                            <a class="btn btn-info text-white btn-sm" onclick="DetailsForm(@item.DocumentID)">Details</a>
+
+                            <a class="btn btn-danger btn-sm" onclick="ConfirmForm(@item.DocumentID, '@item.Lastname', '@item.Firstname', '@item.Middlename')" @(ViewBag.CanRemove != true ? "hidden" : "")>Delete</a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3"></div>
 

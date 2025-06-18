@@ -1,34 +1,105 @@
-﻿@model List<SPELS_TRACKING_SYSTEM.Models.DocumentHistory>
+﻿@model SPELS_TRACKING_SYSTEM.ViewModels.HomeVM
+@inject IHttpContextAccessor httpContextAccessor
 
 @{
-    Layout = "_AdminLayout";
-    ViewData["Title"] = "Home Page";
+    var admin = httpContextAccessor.HttpContext.Session.GetInt32("IsAdmin");
+    if (admin == 1)
+    {
+        Layout = "_AdminLayout";
+        ViewData["Title"] = "Home Page";
+    }
+    else
+    {
+        Layout = "_Layout";
+        ViewData["Title"] = "Home Page";
+    }
 }
 
-<div class="d-flex align-items-center mt-3 mb-3">
-    <h4 class="me-auto">Document Histories</h4>
+<div class="card-header bg-white py-3">
+    <div class="d-flex align-items-center">
+        <h4 class="mb-0">
+            Document History
+        </h4>
+        <div class="ms-auto">
+            <span class="badge bg-primary rounded-pill p-2">@Model.DocumentHistories.Count() Records</span>
+        </div>
+    </div>
+</div>
+<div class="card-body">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th class="fw-semibold">Timestamp</th>
+                    <th class="fw-semibold">Name of Applicant</th>
+                    <th class="fw-semibold">Action</th>
+                    <th class="fw-semibold">Performed By</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var log in Model.DocumentHistories)
+                {
+                    <tr>
+                        <td>
+                            <span class="text-muted">
+                                <i class="far fa-clock me-1"></i>
+                                @log.Timestamp.ToString("MMMM dd, yyyy hh:mm tt")
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm bg-light rounded-circle me-2 d-flex align-items-center justify-content-center">
+                                    <i class="fas fa-user text-primary"></i>
+                                </div>
+                                <div>
+                                    @log.Document.Firstname @log.Document.Middlename @log.Document.Lastname
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            @{
+                                var actionClass = log.ActionType.ToLower() switch
+                                {
+                                    "created" => "primary",
+                                    "edited" => "success",
+                                    _ => "info"
+                                };
+                            }
+                            <span class="badge bg-@actionClass rounded-pill">
+                                @log.ActionType
+                            </span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-user-edit me-2 text-muted"></i>
+                                @log.ActedBy
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Timestamp</th>
-            <th>Name</th>
-            <th>Action</th>
-            <th>Performed By</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var log in Model)
-        {
-            <tr>
-                <td>@log.Timestamp.ToString("MMMM dd, yyyy hh:mm tt")</td>
-                <td>@log.Document.Firstname @log.Document.Middlename @log.Document.Lastname</td>
-                <td>@log.ActionType</td>
-                <td>@log.ActedBy</td>
-            </tr>
-        }
-    </tbody>
-</table>
+<style>
+    .avatar-sm {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .table > :not(caption) > * > * {
+        padding: 1rem;
+    }
+    
+    .card {
+        border: none;
+        border-radius: 0.5rem;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(0,0,0,.02);
+    }
+</style>
 
 
